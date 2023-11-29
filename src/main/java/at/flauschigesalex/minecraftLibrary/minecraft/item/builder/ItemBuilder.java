@@ -23,6 +23,7 @@ public class ItemBuilder implements Cloneable {
     private Color leatherColor;
     private int amount = 1;
     private int durability = 0;
+    private Integer modelData;
     private boolean unbreakable = false;
     private final @NotNull ArrayList<ItemFlag> flags = new ArrayList<>();
     private @NotNull Map<Enchantment, Integer> enchants = new HashMap<>();
@@ -75,6 +76,11 @@ public class ItemBuilder implements Cloneable {
         return this;
     }
 
+    public ItemBuilder setCustomModelData(int modelData) {
+        this.modelData = modelData;
+        return this;
+    }
+
     public ItemBuilder setBreakable(boolean breakable) {
         this.unbreakable = !breakable;
         return this;
@@ -121,6 +127,7 @@ public class ItemBuilder implements Cloneable {
         if (displayLore != null) meta.lore(displayLore.asComponentList(false));
         if (unbreakable) meta.setUnbreakable(true);
         if (!flags.isEmpty()) flags.forEach(meta::addItemFlags);
+        if (modelData != null) meta.setCustomModelData(modelData);
         item.setItemMeta(meta);
         item.setDurability((short) (item.getType().getMaxDurability() - durability));
         item.setAmount(amount);
