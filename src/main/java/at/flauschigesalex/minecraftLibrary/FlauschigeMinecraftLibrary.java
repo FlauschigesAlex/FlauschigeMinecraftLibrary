@@ -7,7 +7,6 @@ import at.flauschigesalex.minecraftLibrary.minecraft.bukkit.PluginCommand;
 import at.flauschigesalex.minecraftLibrary.minecraft.bukkit.PluginListener;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.Server;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +38,7 @@ public class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
      * @return an instance of the API
      */
     public static FlauschigeMinecraftLibrary getAPI(@NotNull JavaPlugin javaPlugin) {
-        return getAPI().setPluginName(javaPlugin);
+        return getAPI().setPlugin(javaPlugin);
     }
 
     protected FlauschigeMinecraftLibrary() {
@@ -68,19 +67,11 @@ public class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
     }
 
     private JavaPlugin javaPlugin;
-    private FlauschigeMinecraftLibrary setPluginName(final JavaPlugin javaPlugin) {
+    private FlauschigeMinecraftLibrary setPlugin(final JavaPlugin javaPlugin) {
         this.javaPlugin = javaPlugin;
         return this;
     }
 
-    public boolean isMinecraftServer() {
-        try {
-            Server server = Bukkit.getServer();
-        } catch (NoClassDefFoundError fail) {
-            return false;
-        }
-        return true;
-    }
     public MojangAPI mojangAPI() {
         return MojangAPI.mojangAPI();
     }
