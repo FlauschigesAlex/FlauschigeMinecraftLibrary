@@ -44,7 +44,6 @@ public class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
 
     protected FlauschigeMinecraftLibrary() {
         super();
-        ownDirectoryPath = getClass().getPackage().getName();
         this.addWorkingDirectory(getClass().getPackageName());
         for (Class<?> subClass : getReflector().reflect().getSubClasses(PluginCommand.class)) {
             try {
