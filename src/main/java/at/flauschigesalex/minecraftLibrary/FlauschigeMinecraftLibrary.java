@@ -56,7 +56,7 @@ public final class FlauschigeMinecraftLibrary {
             try {
                 PluginListener listener = (PluginListener) subClass.getConstructor().newInstance();
                 if (!listener.isEnabled()) continue;
-                Plugin plugin = javaPlugin;
+                Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
                 if (plugin == null) break;
                 Bukkit.getPluginManager().registerEvents(listener, plugin);
             } catch (Exception fail) {
@@ -65,9 +65,9 @@ public final class FlauschigeMinecraftLibrary {
         }
     }
 
-    private JavaPlugin javaPlugin;
+    private String pluginName;
     private FlauschigeMinecraftLibrary setPlugin(final JavaPlugin javaPlugin) {
-        this.javaPlugin = javaPlugin;
+        this.pluginName = javaPlugin.getName();
         return this;
     }
 
