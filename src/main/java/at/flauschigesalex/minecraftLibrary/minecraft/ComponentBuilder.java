@@ -96,7 +96,7 @@ public class ComponentBuilder {
                 list.addAll(deconstruct(child));
             }
         } else {
-            list.add(component);
+            list.add(component.decoration(TextDecoration.ITALIC, false));
         }
 
         return list;
