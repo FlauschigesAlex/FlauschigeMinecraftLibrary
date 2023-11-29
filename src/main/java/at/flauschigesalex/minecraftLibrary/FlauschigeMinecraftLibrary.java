@@ -44,6 +44,7 @@ public class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
 
     protected FlauschigeMinecraftLibrary() {
         super();
+        this.addWorkingDirectory(getClass().getPackageName());
         for (Class<?> subClass : getReflector().reflect().getSubClasses(PluginCommand.class)) {
             try {
                 PluginCommand command = (PluginCommand) subClass.getConstructor().newInstance();
