@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings({"unused"})
 @Getter
-public final class FlauschigeMinecraftLibrary {
+public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
     public static void main(String[] args) {
         getAPI();
     }
@@ -42,7 +42,7 @@ public final class FlauschigeMinecraftLibrary {
     }
 
     private FlauschigeMinecraftLibrary() {
-        FlauschigeLibrary.getAPI().addWorkingDirectory(getClass().getPackageName());
+        super();
         for (Class<?> subClass : getReflector().reflect().getSubClasses(PluginCommand.class)) {
             try {
                 PluginCommand command = (PluginCommand) subClass.getConstructor().newInstance();
