@@ -118,7 +118,7 @@ public class ItemBuilder implements Cloneable {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
         if (displayName != null) meta.displayName(displayName.asTextComponent());
-        if (displayLore != null) meta.lore(displayLore.asComponentList());
+        if (displayLore != null) meta.lore(displayLore.asComponentList(false));
         if (unbreakable) meta.setUnbreakable(true);
         if (!flags.isEmpty()) flags.forEach(meta::addItemFlags);
         item.setItemMeta(meta);

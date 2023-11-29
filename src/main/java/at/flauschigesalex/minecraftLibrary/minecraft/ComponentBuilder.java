@@ -65,7 +65,7 @@ public class ComponentBuilder {
     public final Component asComponent() {
         return component;
     }
-    public final ArrayList<Component> asComponentList() {
+    public final ArrayList<Component> asComponentList(boolean useItalic) {
         ArrayList<Component> components = new ArrayList<>(deconstruct(component));
 
         ArrayList<Component> finalComponents = new ArrayList<>();
@@ -82,6 +82,8 @@ public class ComponentBuilder {
                 continue;
             }
 
+            if (!useItalic)
+                finalComponent = finalComponent.decoration(TextDecoration.ITALIC, false);
             finalComponents.set(finalComponentInt, finalComponents.get(finalComponentInt).append(finalComponent));
         }
 
@@ -96,7 +98,7 @@ public class ComponentBuilder {
                 list.addAll(deconstruct(child));
             }
         } else {
-            list.add(component.decoration(TextDecoration.ITALIC, false));
+            list.add(component);
         }
 
         return list;
