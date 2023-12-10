@@ -13,9 +13,9 @@ import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings({"unused"})
 @Getter
-public final class FlauschigeMinecraftLibrary {
+public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
     public static void main(String[] args) {
-        getAPI();
+        getLibrary();
     }
 
     private static FlauschigeMinecraftLibrary flauschigeMinecraftLibrary;
@@ -24,10 +24,10 @@ public final class FlauschigeMinecraftLibrary {
      * Make sure to run this method in your main class!
      * This is extremely important for reflections!
      *
-     * @return an instance of the API
-     * @see #getAPI(JavaPlugin)
+     * @return an instance of the Library
+     * @see #getLibrary(JavaPlugin)
      */
-    public static FlauschigeMinecraftLibrary getAPI() {
+    public static FlauschigeMinecraftLibrary getLibrary() {
         if (flauschigeMinecraftLibrary == null) flauschigeMinecraftLibrary = new FlauschigeMinecraftLibrary();
         return flauschigeMinecraftLibrary;
     }
@@ -35,14 +35,15 @@ public final class FlauschigeMinecraftLibrary {
      * Make sure to run this method in your main class!
      * This is extremely important for reflections!
      *
-     * @return an instance of the API
+     * @return an instance of the Library
      */
-    public static FlauschigeMinecraftLibrary getAPI(@NotNull JavaPlugin javaPlugin) {
-        return getAPI().setPlugin(javaPlugin);
+    public static FlauschigeMinecraftLibrary getLibrary(@NotNull JavaPlugin javaPlugin) {
+        return getLibrary().setPlugin(javaPlugin);
     }
 
     private FlauschigeMinecraftLibrary() {
-        FlauschigeLibrary.getAPI();
+        super();
+        FlauschigeLibrary.getLibrary();
         for (Class<?> subClass : getReflector().reflect().getSubClasses(PluginCommand.class)) {
             try {
                 PluginCommand command = (PluginCommand) subClass.getConstructor().newInstance();
