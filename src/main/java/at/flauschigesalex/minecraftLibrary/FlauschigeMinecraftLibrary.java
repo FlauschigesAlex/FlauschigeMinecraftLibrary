@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings({"unused"})
 @Getter
@@ -43,32 +44,37 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
 
     private FlauschigeMinecraftLibrary() {
         super();
-        FlauschigeLibrary.getLibrary();
+    }
+
+    @Getter
+    private static @Nullable String pluginName;
+    private FlauschigeMinecraftLibrary setPlugin(final JavaPlugin javaPlugin) {
+        pluginName = javaPlugin.getName();
+
         for (Class<?> subClass : getReflector().reflect().getSubClasses(PluginCommand.class)) {
+            if (getPluginName() == null)
+                break;
             try {
                 PluginCommand command = (PluginCommand) subClass.getConstructor().newInstance();
                 if (!command.isEnabled()) continue;
-                Bukkit.getCommandMap().register(command.getName(), command);
+                Bukkit.getCommandMap().register(command.getName(), command.getPluginPrefix(), command);
             } catch (Exception fail) {
                 fail.printStackTrace();
             }
         }
         for (Class<?> subClass : getReflector().reflect().getSubClasses(PluginListener.class)) {
+            if (getPluginName() == null)
+                break;
             try {
                 PluginListener listener = (PluginListener) subClass.getConstructor().newInstance();
                 if (!listener.isEnabled()) continue;
-                Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
+                Plugin plugin = Bukkit.getPluginManager().getPlugin(getPluginName());
                 if (plugin == null) break;
                 Bukkit.getPluginManager().registerEvents(listener, plugin);
             } catch (Exception fail) {
                 fail.printStackTrace();
             }
         }
-    }
-
-    private String pluginName;
-    private FlauschigeMinecraftLibrary setPlugin(final JavaPlugin javaPlugin) {
-        this.pluginName = javaPlugin.getName();
         return this;
     }
 
