@@ -3,11 +3,12 @@
   <groupId>flauschigesAlex</groupId>
   <artifactId>FlauschigeMinecraftLibrary</artifactId>
   <versioning>
-    <release>v1.0.3</release>
+    <release>v1.0.4</release>
     <versions>
       <version>v1.0.2</version>
       <version>v1.0.3</version>
+      <version>v1.0.4</version>
     </versions>
-    <lastUpdated>20231210003513</lastUpdated>
+    <lastUpdated>20231210013455</lastUpdated>
   </versioning>
 </metadata>

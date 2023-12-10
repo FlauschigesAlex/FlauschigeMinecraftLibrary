@@ -1,6 +1,9 @@
 package at.flauschigesalex.minecraftLibrary.minecraft.bukkit;
 
+import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
@@ -10,8 +13,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary.getLibrary;
+
 @SuppressWarnings("unused")
+@Getter
 public abstract class PluginCommand extends Command {
+
+    private String pluginPrefix;
 
     protected PluginCommand(@NotNull String command) {
         this(command, "");
@@ -24,6 +32,13 @@ public abstract class PluginCommand extends Command {
     }
     protected PluginCommand(@NotNull String command, @NotNull String description, @NotNull String usage, @NotNull ArrayList<String> aliases) {
         super(command, description, usage, aliases);
+        final String pluginName = FlauschigeMinecraftLibrary.getPluginName();
+        this.pluginPrefix = pluginName == null ? "flauschigesalex" : pluginName;
+    }
+
+    public PluginCommand setPluginPrefix(final @NotNull String pluginPrefix) {
+        this.pluginPrefix = pluginPrefix;
+        return this;
     }
 
     public boolean isEnabled() {
@@ -88,7 +103,7 @@ public abstract class PluginCommand extends Command {
     }
 
     public final @NotNull String getLabel() {
-        return super.getLabel();
+        return getLibrary().getPluginName() != null ? getLibrary().getPluginName() : super.getLabel();
     }
     public final boolean setLabel(@NotNull String name) {
         return super.setLabel(name);
