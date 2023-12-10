@@ -1,13 +1,13 @@
 package at.flauschigesalex.minecraftLibrary.minecraft.item.builder;
 
-import at.flauschigesalex.defaultLibrary.exception.APIException;
+import at.flauschigesalex.defaultLibrary.exception.LibraryException;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 @SuppressWarnings({"unused", "BooleanMethodIsAlwaysInverted"})
-public final class ItemBuilderException extends APIException {
+public final class ItemBuilderException extends LibraryException {
 
     public static boolean isInventoryCapable(Material material) {
         Inventory inventory = Bukkit.createInventory(null, 9);

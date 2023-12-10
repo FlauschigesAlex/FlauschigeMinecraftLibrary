@@ -30,7 +30,7 @@ public abstract class PluginCommand extends Command {
         return true;
     }
 
-    public boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
+    public boolean execute(@NotNull CommandSender commandSender, @NotNull String alias, @NotNull String[] args) {
         return false;
     }
 

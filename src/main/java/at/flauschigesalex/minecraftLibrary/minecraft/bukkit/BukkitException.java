@@ -1,9 +1,9 @@
 package at.flauschigesalex.minecraftLibrary.minecraft.bukkit;
 
-import at.flauschigesalex.defaultLibrary.exception.APIException;
+import at.flauschigesalex.defaultLibrary.exception.LibraryException;
 
 @SuppressWarnings("unused")
-public class BukkitException extends APIException {
+public class BukkitException extends LibraryException {
 
     public static final BukkitException bukkitNotFoundException = new BukkitException("Could not get bukkit main thread. Maybe you are not playing minecraft?");
 
