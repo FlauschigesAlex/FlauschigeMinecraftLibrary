@@ -27,7 +27,6 @@ public final class NameResolver {
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     public String resolve() throws NullPointerException {
         if (mojangAPI == null) {
             throw new NullPointerException("mojangAPI is not instanced!");
@@ -37,7 +36,7 @@ public final class NameResolver {
             return name;
         }
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-            if (!onlinePlayer.getUniqueId().toString().replace("-","").equalsIgnoreCase(uuid)) continue;
+            if (!onlinePlayer.getUniqueId().toString().replace("-", "").equalsIgnoreCase(uuid)) continue;
             final String name = onlinePlayer.getName();
             mojangAPI.cache.put(name, uuid);
             return name;

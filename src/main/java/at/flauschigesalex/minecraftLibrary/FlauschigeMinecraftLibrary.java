@@ -15,11 +15,13 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings({"unused"})
 @Getter
 public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
+    private static FlauschigeMinecraftLibrary flauschigeMinecraftLibrary;
+    @Getter
+    private static @Nullable String pluginName;
+
     public static void main(String[] args) {
         getLibrary();
     }
-
-    private static FlauschigeMinecraftLibrary flauschigeMinecraftLibrary;
 
     /**
      * Make sure to run this method in your main class!
@@ -32,6 +34,7 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
         if (flauschigeMinecraftLibrary == null) flauschigeMinecraftLibrary = new FlauschigeMinecraftLibrary();
         return flauschigeMinecraftLibrary;
     }
+
     /**
      * Make sure to run this method in your main class!
      * This is extremely important for reflections!
@@ -46,8 +49,14 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
         super();
     }
 
-    @Getter
-    private static @Nullable String pluginName;
+    public MojangAPI mojangAPI() {
+        return MojangAPI.mojangAPI();
+    }
+
+    public Reflector getReflector() {
+        return Reflector.getReflector();
+    }
+
     private FlauschigeMinecraftLibrary setPlugin(final JavaPlugin javaPlugin) {
         pluginName = javaPlugin.getName();
 
@@ -76,12 +85,5 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
             }
         }
         return this;
-    }
-
-    public MojangAPI mojangAPI() {
-        return MojangAPI.mojangAPI();
-    }
-    public Reflector getReflector() {
-        return Reflector.getReflector();
     }
 }

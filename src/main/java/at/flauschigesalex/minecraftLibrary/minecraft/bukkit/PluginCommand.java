@@ -3,7 +3,6 @@ package at.flauschigesalex.minecraftLibrary.minecraft.bukkit;
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
@@ -24,44 +23,29 @@ public abstract class PluginCommand extends Command {
     protected PluginCommand(@NotNull String command) {
         this(command, "");
     }
+
     protected PluginCommand(@NotNull String command, @NotNull String description) {
-        this(command, "", "/"+command);
+        this(command, "", "/" + command);
     }
+
     protected PluginCommand(@NotNull String command, @NotNull String description, @NotNull String usage) {
-        this(command, "", "/"+command, new ArrayList<>());
+        this(command, "", "/" + command, new ArrayList<>());
     }
+
     protected PluginCommand(@NotNull String command, @NotNull String description, @NotNull String usage, @NotNull ArrayList<String> aliases) {
         super(command, description, usage, aliases);
         final String pluginName = FlauschigeMinecraftLibrary.getPluginName();
         this.pluginPrefix = pluginName == null ? "flauschigesalex" : pluginName;
     }
 
-    public PluginCommand setPluginPrefix(final @NotNull String pluginPrefix) {
-        this.pluginPrefix = pluginPrefix;
-        return this;
-    }
-
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public boolean execute(@NotNull CommandSender commandSender, @NotNull String alias, @NotNull String[] args) {
-        return false;
-    }
-
-    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        return new ArrayList<>();
-    }
-    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args, @Nullable Location location) throws IllegalArgumentException {
-        return new ArrayList<>();
-    }
-
     public final boolean register(@NotNull CommandMap commandMap) {
         return super.register(commandMap);
     }
+
     public final boolean unregister(@NotNull CommandMap commandMap) {
         return super.unregister(commandMap);
     }
+
     public final boolean isRegistered() {
         return super.isRegistered();
     }
@@ -70,10 +54,11 @@ public abstract class PluginCommand extends Command {
     public final @NotNull String getTimingName() {
         return super.getTimingName();
     }
-    
+
     public final @NotNull String getName() {
         return super.getName();
     }
+
     public final boolean setName(@NotNull String name) {
         return super.setName(name);
     }
@@ -81,20 +66,19 @@ public abstract class PluginCommand extends Command {
     public final @Nullable String getPermission() {
         return super.getPermission();
     }
+
     public final void setPermission(@Nullable String permission) {
         super.setPermission(permission);
     }
 
-    public boolean permissible(@NotNull CommandSender permissible) {
-        return super.testPermission(permissible);
-    }
     /**
-     * @deprecated
      * @see #permissible(CommandSender)
+     * @deprecated
      */
     public final boolean testPermission(@NotNull CommandSender permissible) {
         return this.permissible(permissible);
     }
+
     /**
      * @deprecated
      */
@@ -103,23 +87,31 @@ public abstract class PluginCommand extends Command {
     }
 
     public final @NotNull String getLabel() {
-        return getLibrary().getPluginName() != null ? getLibrary().getPluginName() : super.getLabel();
+        getLibrary();
+        if (FlauschigeMinecraftLibrary.getPluginName() != null) {
+            getLibrary();
+            return FlauschigeMinecraftLibrary.getPluginName();
+        } else {
+            return super.getLabel();
+        }
     }
+
     public final boolean setLabel(@NotNull String name) {
         return super.setLabel(name);
     }
 
     /**
-     * @deprecated
      * @see #permissionMessage()
+     * @deprecated
      */
     @SuppressWarnings("deprecation")
     public final @Nullable String getPermissionMessage() {
         return super.getPermissionMessage();
     }
+
     /**
-     * @deprecated
      * @see #permissionMessage(Component)
+     * @deprecated
      */
     @SuppressWarnings("deprecation")
     public final @NotNull Command setPermissionMessage(@Nullable String permissionMessage) {
@@ -129,6 +121,7 @@ public abstract class PluginCommand extends Command {
     public final @NotNull String getDescription() {
         return super.getDescription();
     }
+
     public final @NotNull Command setDescription(@NotNull String description) {
         return super.setDescription(description);
     }
@@ -136,6 +129,7 @@ public abstract class PluginCommand extends Command {
     public final @NotNull String getUsage() {
         return super.getUsage();
     }
+
     /**
      * @see #PluginCommand(String, String, String)
      */
@@ -146,6 +140,7 @@ public abstract class PluginCommand extends Command {
     public final @NotNull List<String> getAliases() {
         return super.getAliases();
     }
+
     /**
      * @see #PluginCommand(String, String, String, ArrayList)
      */
@@ -156,7 +151,33 @@ public abstract class PluginCommand extends Command {
     public final @Nullable Component permissionMessage() {
         return super.permissionMessage();
     }
+
     public final void permissionMessage(@Nullable Component permissionMessage) {
         super.permissionMessage(permissionMessage);
+    }
+
+    public boolean execute(@NotNull CommandSender commandSender, @NotNull String alias, @NotNull String[] args) {
+        return false;
+    }
+
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        return new ArrayList<>();
+    }
+
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args, @Nullable Location location) throws IllegalArgumentException {
+        return tabComplete(sender, alias, args);
+    }
+
+    public boolean permissible(@NotNull CommandSender permissible) {
+        return super.testPermission(permissible);
+    }
+
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public PluginCommand setPluginPrefix(final @NotNull String pluginPrefix) {
+        this.pluginPrefix = pluginPrefix;
+        return this;
     }
 }

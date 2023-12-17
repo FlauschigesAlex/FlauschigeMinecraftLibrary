@@ -18,8 +18,9 @@ public final class ItemBuilderException extends LibraryException {
     public static ItemBuilderException materialFail(Material material) {
         return new ItemBuilderException("Item material cannot be null!");
     }
+
     public static ItemBuilderException inventoryFail(Material material) {
-        return new ItemBuilderException("Given material "+material+" cannot be contained in an inventory!");
+        return new ItemBuilderException("Given material " + material + " cannot be contained in an inventory!");
     }
 
     private ItemBuilderException(String message) {

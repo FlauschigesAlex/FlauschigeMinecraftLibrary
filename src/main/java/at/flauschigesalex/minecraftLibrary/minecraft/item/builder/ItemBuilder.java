@@ -1,5 +1,6 @@
 package at.flauschigesalex.minecraftLibrary.minecraft.item.builder;
 
+import at.flauschigesalex.minecraftLibrary.minecraft.ComponentBuilder;
 import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,26 +15,28 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-@SuppressWarnings({"unused", "UnusedReturnValue"})
+@SuppressWarnings({"unused", "UnusedReturnValue", "DataFlowIssue"})
 public class ItemBuilder implements Cloneable {
 
+    private final @NotNull ArrayList<ItemFlag> flags = new ArrayList<>();
     private Material material;
-    private ItemComponent displayName;
-    private ItemComponent displayLore;
+    private ComponentBuilder<?> displayName;
+    private ComponentBuilder<?> displayLore;
     private Color leatherColor;
     private int amount = 1;
     private int durability = 0;
     private Integer modelData;
     private boolean unbreakable = false;
-    private final @NotNull ArrayList<ItemFlag> flags = new ArrayList<>();
     private @NotNull Map<Enchantment, Integer> enchants = new HashMap<>();
 
     public ItemBuilder() {
         this(Material.PAPER);
     }
+
     public ItemBuilder(Material material) {
         this(new ItemStack(material));
     }
+
     public ItemBuilder(ItemStack itemStack) {
         this.material = itemStack.getType();
         if (itemStack.hasItemMeta()) {
@@ -51,41 +54,6 @@ public class ItemBuilder implements Cloneable {
         }
     }
 
-    public ItemBuilder setDisplayName(ItemComponent component) {
-        this.displayName = component;
-        return this;
-    }
-
-    public ItemBuilder setDisplayLore(ItemComponent component) {
-        this.displayLore = component;
-        return this;
-    }
-
-    public ItemBuilder setMaterial(Material material) {
-        this.material = material;
-        return this;
-    }
-
-    public ItemBuilder setAmount(int amount) {
-        this.amount = amount;
-        return this;
-    }
-
-    public ItemBuilder setDurability(int durability) {
-        this.durability = durability;
-        return this;
-    }
-
-    public ItemBuilder setCustomModelData(int modelData) {
-        this.modelData = modelData;
-        return this;
-    }
-
-    public ItemBuilder setBreakable(boolean breakable) {
-        this.unbreakable = !breakable;
-        return this;
-    }
-
     public ItemBuilder addFlags(ItemFlag... flags) {
         this.flags.addAll(List.of(flags));
         return this;
@@ -93,11 +61,6 @@ public class ItemBuilder implements Cloneable {
 
     public ItemBuilder removeFlags(ItemFlag... flags) {
         this.flags.removeAll(List.of(flags));
-        return this;
-    }
-
-    public ItemBuilder setLeatherColor(Color leatherColor) {
-        this.leatherColor = leatherColor;
         return this;
     }
 
@@ -151,6 +114,7 @@ public class ItemBuilder implements Cloneable {
 
         return item;
     }
+
     public ItemStack buildHead(UUID offlinePlayer) {
         material = Material.PLAYER_HEAD;
         ItemStack item = build();
@@ -161,12 +125,15 @@ public class ItemBuilder implements Cloneable {
 
         return item;
     }
+
     public ItemStack item() {
         return build();
     }
+
     public ItemStack head(String offlinePlayer) {
         return buildHead(offlinePlayer);
     }
+
     public ItemStack head(UUID offlinePlayer) {
         return buildHead(offlinePlayer);
     }
@@ -174,6 +141,7 @@ public class ItemBuilder implements Cloneable {
     public ItemStack skull(String offlinePlayer) {
         return buildHead(offlinePlayer);
     }
+
     public ItemStack skull(UUID offlinePlayer) {
         return buildHead(offlinePlayer);
     }
@@ -182,5 +150,45 @@ public class ItemBuilder implements Cloneable {
     @Override
     public ItemBuilder clone() {
         return (ItemBuilder) super.clone();
+    }
+
+    public ItemBuilder setDisplayName(ComponentBuilder<?> component) {
+        this.displayName = component;
+        return this;
+    }
+
+    public ItemBuilder setDisplayLore(ComponentBuilder<?> component) {
+        this.displayLore = component;
+        return this;
+    }
+
+    public ItemBuilder setMaterial(Material material) {
+        this.material = material;
+        return this;
+    }
+
+    public ItemBuilder setAmount(int amount) {
+        this.amount = amount;
+        return this;
+    }
+
+    public ItemBuilder setDurability(int durability) {
+        this.durability = durability;
+        return this;
+    }
+
+    public ItemBuilder setCustomModelData(int modelData) {
+        this.modelData = modelData;
+        return this;
+    }
+
+    public ItemBuilder setBreakable(boolean breakable) {
+        this.unbreakable = !breakable;
+        return this;
+    }
+
+    public ItemBuilder setLeatherColor(Color leatherColor) {
+        this.leatherColor = leatherColor;
+        return this;
     }
 }

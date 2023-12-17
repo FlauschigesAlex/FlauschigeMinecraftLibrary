@@ -12,12 +12,15 @@ public abstract class PluginListener implements Listener {
 
     public PluginListener() {
     }
+
     public PluginListener(@NotNull String name) {
         this.name = name;
     }
+
     public PluginListener(@NotNull Class<?> belongingClass) {
         this.belongingClass = belongingClass;
     }
+
     public PluginListener(@NotNull String name, @NotNull Class<?> belongingClass) {
         this.name = name;
         this.belongingClass = belongingClass;
