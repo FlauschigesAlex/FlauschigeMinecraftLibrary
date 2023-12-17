@@ -8,10 +8,26 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"UnusedReturnValue", "unused", "unchecked"})
-public class ComponentBuilder<T extends ComponentBuilder<?>> {
+@SuppressWarnings({"UnusedReturnValue", "unused"})
+public class ComponentBuilder {
+
+    public static ComponentBuilder builder() {
+        return new ComponentBuilder();
+    }
+    public static ComponentBuilder builder(@NotNull Component component, final @NotNull Component... moreComponents) {
+        for (final ComponentLike moreComponent : moreComponents) {
+            component = component.append(moreComponent);
+        }
+        return new ComponentBuilder(component);
+    }
 
     Component component = Component.empty().decoration(TextDecoration.ITALIC, false);
+
+    private ComponentBuilder() {
+    }
+    private ComponentBuilder(Component component) {
+        this.component = component;
+    }
 
     public final TextComponent asTextComponent() {
         return (TextComponent) component;
@@ -49,28 +65,28 @@ public class ComponentBuilder<T extends ComponentBuilder<?>> {
     /**
      * Clears previous component
      */
-    public T clear() {
+    public ComponentBuilder clear() {
         component = Component.empty().decoration(TextDecoration.ITALIC, false);
-        return (T) this;
+        return this;
     }
 
-    public T appendComponents(final @NotNull List<Component> components) {
+    public ComponentBuilder appendComponents(final @NotNull List<Component> components) {
         components.forEach(this::appendComponents);
-        return (T) this;
+        return this;
     }
 
-    public T appendComponents(final @NotNull ComponentLike... component) {
+    public ComponentBuilder appendComponents(final @NotNull ComponentLike... component) {
         for (ComponentLike componentLike : component) {
             this.component = this.component.append(componentLike);
         }
-        return (T) this;
+        return this;
     }
 
-    public T appendText(final @NotNull String... text) {
+    public ComponentBuilder appendText(final @NotNull String... text) {
         for (String textLike : text) {
             this.component = this.component.append(Component.text(textLike));
         }
-        return (T) this;
+        return this;
     }
 
     final ArrayList<Component> decompile(final @NotNull Component component) {
@@ -91,25 +107,25 @@ public class ComponentBuilder<T extends ComponentBuilder<?>> {
     /**
      * Overrides previous component
      */
-    public T setComponent(final @NotNull Component component) {
+    public ComponentBuilder setComponent(final @NotNull Component component) {
         this.component = component;
-        return (T) this;
+        return this;
     }
 
     /**
      * Overrides previous component
      */
-    public T setText(String text) {
+    public ComponentBuilder setText(String text) {
         this.component = Component.text(text);
-        return (T) this;
+        return this;
     }
 
     /**
      * Overrides previous component
      */
-    public T setText(final @NotNull List<Component> components) {
+    public ComponentBuilder setText(final @NotNull List<Component> components) {
         this.clear();
         this.appendComponents(components);
-        return (T) this;
+        return this;
     }
 }

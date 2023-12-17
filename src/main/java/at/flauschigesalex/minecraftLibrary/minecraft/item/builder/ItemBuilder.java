@@ -20,8 +20,8 @@ public class ItemBuilder implements Cloneable {
 
     private final @NotNull ArrayList<ItemFlag> flags = new ArrayList<>();
     private Material material;
-    private ComponentBuilder<?> displayName;
-    private ComponentBuilder<?> displayLore;
+    private ComponentBuilder displayName;
+    private ComponentBuilder displayLore;
     private Color leatherColor;
     private int amount = 1;
     private int durability = 0;
@@ -152,12 +152,12 @@ public class ItemBuilder implements Cloneable {
         return (ItemBuilder) super.clone();
     }
 
-    public ItemBuilder setDisplayName(ComponentBuilder<?> component) {
+    public ItemBuilder setDisplayName(ComponentBuilder component) {
         this.displayName = component;
         return this;
     }
 
-    public ItemBuilder setDisplayLore(ComponentBuilder<?> component) {
+    public ItemBuilder setDisplayLore(ComponentBuilder component) {
         this.displayLore = component;
         return this;
     }
