@@ -34,15 +34,36 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
         if (flauschigeMinecraftLibrary == null) flauschigeMinecraftLibrary = new FlauschigeMinecraftLibrary();
         return flauschigeMinecraftLibrary;
     }
-
+    /**
+     * Make sure to run this method in your main class!
+     * This is extremely important for reflections!
+     *
+     * @return an instance of the Library
+     * @see #getLibrary(boolean, JavaPlugin) 
+     */
+    public static FlauschigeMinecraftLibrary getLibrary(boolean autoRegisterManagers) {
+        FlauschigeLibrary.autoRegisterManagers = autoRegisterManagers;
+        if (flauschigeMinecraftLibrary == null) flauschigeMinecraftLibrary = new FlauschigeMinecraftLibrary();
+        return flauschigeMinecraftLibrary;
+    }
+    /**
+     * Make sure to run this method in your main class!
+     * This is extremely important for reflections!
+     *
+     * @return an instance of the Library
+     * @see #getLibrary(boolean, JavaPlugin) 
+     */
+    public static FlauschigeMinecraftLibrary getLibrary(@NotNull JavaPlugin javaPlugin) {
+        return getLibrary().setPlugin(javaPlugin);
+    }
     /**
      * Make sure to run this method in your main class!
      * This is extremely important for reflections!
      *
      * @return an instance of the Library
      */
-    public static FlauschigeMinecraftLibrary getLibrary(@NotNull JavaPlugin javaPlugin) {
-        return getLibrary().setPlugin(javaPlugin);
+    public static FlauschigeMinecraftLibrary getLibrary(boolean autoRegisterManagers, @NotNull JavaPlugin javaPlugin) {
+        return getLibrary(autoRegisterManagers).setPlugin(javaPlugin);
     }
 
     private FlauschigeMinecraftLibrary() {
