@@ -1,6 +1,6 @@
-package at.flauschigesalex.minecraftLibrary.minecraft.item.builder;
+package at.flauschigesalex.minecraftLibrary.item.builder;
 
-import at.flauschigesalex.defaultLibrary.exception.LibraryException;
+import at.flauschigesalex.defaultLibrary.utils.LibraryException;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
