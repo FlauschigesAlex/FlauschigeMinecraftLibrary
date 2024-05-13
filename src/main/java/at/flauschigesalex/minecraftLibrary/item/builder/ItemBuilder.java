@@ -3,6 +3,7 @@ package at.flauschigesalex.minecraftLibrary.item.builder;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -191,11 +192,27 @@ public class ItemBuilder implements Cloneable {
         return (ItemBuilder) super.clone();
     }
 
+    public ItemBuilder setDisplayName(final @NotNull String miniString) {
+        return this.setDisplayName(MiniMessage.miniMessage().deserialize(miniString));
+    }
+
     public ItemBuilder setDisplayName(@NotNull Component component) {
         if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
             component = component.decoration(ITALIC, false);
         this.displayName = component;
         return this;
+    }
+
+    public ItemBuilder setDisplayLore(final @NotNull String... miniString) {
+        return this.setDisplayLore(new ArrayList<>(List.of(miniString)));
+    }
+
+    public ItemBuilder setDisplayLore(final @NotNull ArrayList<String> miniString) {
+        final ArrayList<Component> list = new ArrayList<>();
+        for (final String string : miniString)
+            list.add(MiniMessage.miniMessage().deserialize(string));
+
+        return this.setDisplayLore(list);
     }
 
     public ItemBuilder setDisplayLore(final @NotNull Component... components) {
