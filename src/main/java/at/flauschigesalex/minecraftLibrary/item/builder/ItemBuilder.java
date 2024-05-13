@@ -2,6 +2,7 @@ package at.flauschigesalex.minecraftLibrary.item.builder;
 
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -15,18 +16,24 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
+import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
+
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ItemBuilder implements Cloneable {
 
-    private final @NotNull ArrayList<ItemFlag> flags = new ArrayList<>();
     private Material material;
     private Component displayName;
     private List<Component> displayLore;
+
     private Color leatherColor;
+
     private int amount = 1;
     private int durability = 0;
+
     private Integer modelData;
     private boolean unbreakable = false;
+
+    private final @NotNull ArrayList<ItemFlag> flags = new ArrayList<>();
     private @NotNull Map<Enchantment, Integer> enchants = new HashMap<>();
 
     public ItemBuilder() {
@@ -71,8 +78,23 @@ public class ItemBuilder implements Cloneable {
         return this;
     }
 
+    public ItemBuilder setEnchantments(final @NotNull Map<Enchantment, Integer> enchantments) {
+        this.enchants = enchantments;
+        return this;
+    }
+
     public ItemBuilder addEnchantment(final @NotNull Enchantment enchantment, final int level) {
         this.enchants.put(enchantment, level);
+        return this;
+    }
+
+    public ItemBuilder removeEnchantments(final @NotNull Enchantment... enchantments) {
+        return this.removeEnchantments(List.of(enchantments));
+    }
+
+    public ItemBuilder removeEnchantments(final @NotNull List<Enchantment> enchantments) {
+        for (final Enchantment enchantment : enchantments)
+            this.removeEnchantment(enchantment);
         return this;
     }
 
@@ -169,7 +191,9 @@ public class ItemBuilder implements Cloneable {
         return (ItemBuilder) super.clone();
     }
 
-    public ItemBuilder setDisplayName(final @NotNull Component component) {
+    public ItemBuilder setDisplayName(@NotNull Component component) {
+        if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
+            component = component.decoration(ITALIC, false);
         this.displayName = component;
         return this;
     }
@@ -178,7 +202,13 @@ public class ItemBuilder implements Cloneable {
         return this.setDisplayLore(new ArrayList<>(List.of(components)));
     }
     public ItemBuilder setDisplayLore(final @NotNull Collection<Component> components) {
-        this.displayLore = new ArrayList<>(components);
+        this.displayLore = new ArrayList<>();
+        for (Component component : components) {
+            if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
+                component = component.decoration(ITALIC, false);
+
+            this.displayLore.add(component);
+        }
         return this;
     }
 
