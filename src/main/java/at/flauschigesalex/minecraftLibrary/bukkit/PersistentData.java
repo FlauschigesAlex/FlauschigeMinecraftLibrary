@@ -7,7 +7,6 @@ import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary.getLibrary;
 
@@ -17,13 +16,6 @@ public final class PersistentData {
     private final PersistentDataContainer container;
     private final Plugin plugin;
 
-    public PersistentData(final @NotNull ItemStack itemStack) {
-        this(itemStack.getItemMeta(), getLibrary().getPlugin());
-    }
-    public PersistentData(final @NotNull ItemStack itemStack, final @NotNull Plugin plugin) {
-        this(itemStack.getItemMeta(), plugin);
-    }
-    
     public PersistentData(final @NotNull PersistentDataHolder container) {
         this(container, getLibrary().getPlugin());
     }

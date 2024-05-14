@@ -3,7 +3,6 @@ package at.flauschigesalex.minecraftLibrary.item.builder;
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static at.flauschigesalex.minecraftLibrary.bukkit.ComponentManager.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})
@@ -275,8 +275,9 @@ public class ItemBuilder implements Cloneable {
         if (container != null)
             container.copyTo(item.getItemMeta().getPersistentDataContainer(), true);
         if (!customData.isEmpty()) {
-            final PersistentData data = new PersistentData(item);
+            final PersistentData data = new PersistentData(meta);
             customData.forEach(data::set);
+            item.setItemMeta(meta);
         }
 
         if (leatherColor != null && (material == Material.LEATHER_HELMET || material == Material.LEATHER_CHESTPLATE || material == Material.LEATHER_LEGGINGS || material == Material.LEATHER_BOOTS)) {
@@ -330,23 +331,6 @@ public class ItemBuilder implements Cloneable {
 
     public ItemStack skull(final @NotNull UUID offlinePlayer) {
         return buildHead(offlinePlayer);
-    }
-
-    private ArrayList<Component> spliterator(@NotNull Component component) {
-        final ArrayList<Component> list = new ArrayList<>();
-        if (!component.children().isEmpty()) {
-            final Component withOutChildren = component.children(new ArrayList<>());
-            list.add(withOutChildren);
-
-            for (final Component child : component.children())
-                list.addAll(spliterator(child));
-
-            return list;
-        }
-
-        component = component.replaceText(TextReplacementConfig.builder().match("\\n").replacement("").build());
-        list.add(component);
-        return list;
     }
 
     @SneakyThrows
