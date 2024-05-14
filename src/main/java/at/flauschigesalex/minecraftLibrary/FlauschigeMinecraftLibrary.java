@@ -11,6 +11,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+
 @SuppressWarnings({"unused"})
 @Getter
 public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
@@ -66,6 +68,17 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
 
     private FlauschigeMinecraftLibrary() {
         super();
+    }
+
+    public Plugin getPlugin() {
+        if (pluginName == null)
+            throw new NullPointerException("Could not retrieve plugin because plugin-name is null!");
+
+        final Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
+        if (plugin == null)
+            throw new NullPointerException("Could not retrieve plugin because plugin '"+pluginName+"' does not exist.");
+
+        return plugin;
     }
 
     private FlauschigeMinecraftLibrary setPlugin(final @NotNull JavaPlugin javaPlugin) {
