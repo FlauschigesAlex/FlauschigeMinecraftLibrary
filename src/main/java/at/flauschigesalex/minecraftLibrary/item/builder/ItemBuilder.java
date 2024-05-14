@@ -1,7 +1,9 @@
 package at.flauschigesalex.minecraftLibrary.item.builder;
 
+import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -12,10 +14,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
+
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
@@ -24,7 +29,7 @@ public class ItemBuilder implements Cloneable {
 
     private Material material;
     private Component displayName;
-    private List<Component> displayLore;
+    private final List<LoreSupplier> displayLore = new ArrayList<>();
 
     private Color leatherColor;
 
@@ -34,6 +39,9 @@ public class ItemBuilder implements Cloneable {
     private Integer modelData;
     private boolean unbreakable = false;
 
+    private PersistentDataContainer container;
+    private final HashMap<String, String> customData = new HashMap<>();
+
     private final @NotNull ArrayList<ItemFlag> flags = new ArrayList<>();
     private @NotNull Map<Enchantment, Integer> enchants = new HashMap<>();
 
@@ -42,10 +50,10 @@ public class ItemBuilder implements Cloneable {
     }
 
     public ItemBuilder(final @NotNull Material material) {
-        this(new ItemStack(material));
+        this(new ItemStack(material), false);
     }
 
-    public ItemBuilder(final @NotNull ItemStack itemStack) {
+    public ItemBuilder(final @NotNull ItemStack itemStack, final boolean copyPersistentData) {
         this.material = itemStack.getType();
 
         if (!itemStack.hasItemMeta())
@@ -57,10 +65,12 @@ public class ItemBuilder implements Cloneable {
             flags.add(value);
         }
 
+        container = copyPersistentData ? itemStack.getItemMeta().getPersistentDataContainer() : null;
+
         if (itemStack.getItemMeta().hasDisplayName())
             this.displayName = itemStack.displayName();
         if (itemStack.getItemMeta().hasLore())
-            this.displayLore = itemStack.lore();
+            this.displayLore.add(new LoreSupplier(() -> true, Objects.requireNonNull(itemStack.lore())));
         if (itemStack.getItemMeta().isUnbreakable())
             this.unbreakable = itemStack.getItemMeta().isUnbreakable();
         if (itemStack.getItemMeta().hasEnchants())
@@ -104,6 +114,130 @@ public class ItemBuilder implements Cloneable {
         return this;
     }
 
+    public ItemBuilder setDisplayName(final @NotNull String miniString) {
+        return this.setDisplayName(MiniMessage.miniMessage().deserialize(miniString));
+    }
+
+    public ItemBuilder setDisplayName(@NotNull Component component) {
+        if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
+            component = component.decoration(ITALIC, false);
+        this.displayName = component;
+        return this;
+    }
+
+    public ItemBuilder setDisplayLore(final @NotNull String... miniString) {
+        return this.setDisplayLore(new ArrayList<>(List.of(miniString)));
+    }
+    public ItemBuilder setDisplayLore(final @NotNull ArrayList<String> miniString) {
+        final ArrayList<Component> list = new ArrayList<>();
+        for (final String string : miniString)
+            list.add(MiniMessage.miniMessage().deserialize(string));
+
+        return this.setDisplayLore(list);
+    }
+
+    public ItemBuilder setDisplayLore(final @NotNull Component... components) {
+        return this.setDisplayLore(new ArrayList<>(List.of(components)));
+    }
+    public ItemBuilder setDisplayLore(final @NotNull Collection<Component> components) {
+        this.clearDisplayLore();
+        this.addDisplayLore(components);
+        return this;
+    }
+    
+    public ItemBuilder clearDisplayLore() {
+        this.displayLore.clear();
+        return this;
+    }
+
+    public ItemBuilder addDisplayLore(final @NotNull String... miniString) {
+        return this.addDisplayLore(new ArrayList<>(List.of(miniString)));
+    }
+    public ItemBuilder addDisplayLore(final @NotNull ArrayList<String> miniString) {
+        final ArrayList<Component> list = new ArrayList<>();
+        for (final String string : miniString)
+            list.add(MiniMessage.miniMessage().deserialize(string));
+
+        return this.addDisplayLore(list);
+    }
+
+    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull String... miniString) {
+        return this.addDisplayLore(supplier, new ArrayList<>(List.of(miniString)));
+    }
+    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull ArrayList<String> miniString) {
+        final ArrayList<Component> list = new ArrayList<>();
+        for (final String string : miniString)
+            list.add(MiniMessage.miniMessage().deserialize(string));
+
+        return this.addDisplayLore(supplier, list);
+    }
+
+    public ItemBuilder addDisplayLore(final @NotNull Component... components) {
+        final ArrayList<Component> list = new ArrayList<>();
+        for (final Component component : components)
+            list.addAll(spliterator(component));
+        return this.addDisplayLore(list);
+    }
+    public ItemBuilder addDisplayLore(final @NotNull Collection<Component> components) {
+        for (Component component : components) {
+            if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
+                component = component.decoration(ITALIC, false);
+            this.displayLore.add(new LoreSupplier(() -> true, List.of(component)));
+        }
+        return this;
+    }
+
+    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull Component... components) {
+        final ArrayList<Component> list = new ArrayList<>();
+        for (final Component component : components)
+            list.addAll(spliterator(component));
+        return this.addDisplayLore(supplier, list);
+    }
+    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull Collection<Component> components) {
+        for (Component component : components) {
+            if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
+                component = component.decoration(ITALIC, false);
+
+            this.displayLore.add(new LoreSupplier(supplier, List.of(component)));
+        }
+        return this;
+    }
+
+    public ItemBuilder setMaterial(final @NotNull Material material) {
+        this.material = material;
+        return this;
+    }
+
+    public ItemBuilder setAmount(final int amount) {
+        this.amount = amount;
+        return this;
+    }
+
+    public ItemBuilder setDurability(final int durability) {
+        this.durability = durability;
+        return this;
+    }
+
+    public ItemBuilder setCustomModelData(final int modelData) {
+        this.modelData = modelData;
+        return this;
+    }
+
+    public ItemBuilder setBreakable(final boolean breakable) {
+        this.unbreakable = !breakable;
+        return this;
+    }
+
+    public ItemBuilder setLeatherColor(final @NotNull Color leatherColor) {
+        this.leatherColor = leatherColor;
+        return this;
+    }
+
+    public ItemBuilder addPersistentData(final @NotNull String key, final @NotNull String value) {
+        this.customData.put(key, value);
+        return this;
+    }
+
     @SuppressWarnings("deprecation")
     public ItemStack build() {
         if (material == null)
@@ -120,8 +254,13 @@ public class ItemBuilder implements Cloneable {
 
         if (displayName != null)
             meta.displayName(displayName);
-        if (displayLore != null)
-            meta.lore(displayLore);
+        if (!displayLore.isEmpty()) {
+            final ArrayList<Component> lore = new ArrayList<>();
+            for (final LoreSupplier supplier : displayLore)
+                if (supplier.predicate().get())
+                    lore.addAll(supplier.list());
+            meta.lore(lore);
+        }
         if (unbreakable)
             meta.setUnbreakable(true);
         if (!flags.isEmpty())
@@ -132,6 +271,13 @@ public class ItemBuilder implements Cloneable {
         item.setItemMeta(meta);
         item.setDurability((short) (item.getType().getMaxDurability() - durability));
         item.setAmount(amount);
+
+        if (container != null)
+            container.copyTo(item.getItemMeta().getPersistentDataContainer(), true);
+        if (!customData.isEmpty()) {
+            final PersistentData data = new PersistentData(item);
+            customData.forEach(data::set);
+        }
 
         if (leatherColor != null && (material == Material.LEATHER_HELMET || material == Material.LEATHER_CHESTPLATE || material == Material.LEATHER_LEGGINGS || material == Material.LEATHER_BOOTS)) {
             final LeatherArmorMeta leatherMeta = (LeatherArmorMeta) item.getItemMeta();
@@ -186,76 +332,29 @@ public class ItemBuilder implements Cloneable {
         return buildHead(offlinePlayer);
     }
 
+    private ArrayList<Component> spliterator(@NotNull Component component) {
+        final ArrayList<Component> list = new ArrayList<>();
+        if (!component.children().isEmpty()) {
+            final Component withOutChildren = component.children(new ArrayList<>());
+            list.add(withOutChildren);
+
+            for (final Component child : component.children())
+                list.addAll(spliterator(child));
+
+            return list;
+        }
+
+        component = component.replaceText(TextReplacementConfig.builder().match("\\n").replacement("").build());
+        list.add(component);
+        return list;
+    }
+
     @SneakyThrows
     @Override
     public ItemBuilder clone() {
         return (ItemBuilder) super.clone();
     }
+}
 
-    public ItemBuilder setDisplayName(final @NotNull String miniString) {
-        return this.setDisplayName(MiniMessage.miniMessage().deserialize(miniString));
-    }
-
-    public ItemBuilder setDisplayName(@NotNull Component component) {
-        if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
-            component = component.decoration(ITALIC, false);
-        this.displayName = component;
-        return this;
-    }
-
-    public ItemBuilder setDisplayLore(final @NotNull String... miniString) {
-        return this.setDisplayLore(new ArrayList<>(List.of(miniString)));
-    }
-
-    public ItemBuilder setDisplayLore(final @NotNull ArrayList<String> miniString) {
-        final ArrayList<Component> list = new ArrayList<>();
-        for (final String string : miniString)
-            list.add(MiniMessage.miniMessage().deserialize(string));
-
-        return this.setDisplayLore(list);
-    }
-
-    public ItemBuilder setDisplayLore(final @NotNull Component... components) {
-        return this.setDisplayLore(new ArrayList<>(List.of(components)));
-    }
-    public ItemBuilder setDisplayLore(final @NotNull Collection<Component> components) {
-        this.displayLore = new ArrayList<>();
-        for (Component component : components) {
-            if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
-                component = component.decoration(ITALIC, false);
-
-            this.displayLore.add(component);
-        }
-        return this;
-    }
-
-    public ItemBuilder setMaterial(final @NotNull Material material) {
-        this.material = material;
-        return this;
-    }
-
-    public ItemBuilder setAmount(final int amount) {
-        this.amount = amount;
-        return this;
-    }
-
-    public ItemBuilder setDurability(final int durability) {
-        this.durability = durability;
-        return this;
-    }
-
-    public ItemBuilder setCustomModelData(final int modelData) {
-        this.modelData = modelData;
-        return this;
-    }
-
-    public ItemBuilder setBreakable(final boolean breakable) {
-        this.unbreakable = !breakable;
-        return this;
-    }
-
-    public ItemBuilder setLeatherColor(final @NotNull Color leatherColor) {
-        this.leatherColor = leatherColor;
-        return this;
-    }
+record LoreSupplier(@NotNull Supplier<Boolean> predicate, @NotNull List<Component> list) {
 }
