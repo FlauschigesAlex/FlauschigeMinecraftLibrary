@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.lang.reflect.Constructor;
 
 @SuppressWarnings({"unused"})
 @Getter
@@ -88,7 +89,9 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
             if (getPluginName() == null)
                 break;
             try {
-                final PluginCommand command = (PluginCommand) subClass.getConstructor().newInstance();
+                final Constructor<?> constructor = subClass.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                final PluginCommand command = (PluginCommand) constructor.newInstance();
                 if (!command.isEnabled())
                     continue;
 
@@ -103,7 +106,9 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
             if (getPluginName() == null)
                 break;
             try {
-                final PluginListener listener = (PluginListener) subClass.getConstructor().newInstance();
+                final Constructor<?> constructor = subClass.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                final PluginListener listener = (PluginListener) constructor.newInstance();
                 if (!listener.isEnabled())
                     continue;
 
