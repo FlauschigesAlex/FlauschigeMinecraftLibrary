@@ -92,11 +92,8 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
                 final Constructor<?> constructor = subClass.getDeclaredConstructor();
                 constructor.setAccessible(true);
                 final PluginCommand command = (PluginCommand) constructor.newInstance();
-                if (!command.isEnabled())
-                    continue;
 
                 Bukkit.getCommandMap().register(command.getName(), command.getPluginPrefix(), command);
-
             } catch (Exception fail) {
                 fail.printStackTrace();
             }

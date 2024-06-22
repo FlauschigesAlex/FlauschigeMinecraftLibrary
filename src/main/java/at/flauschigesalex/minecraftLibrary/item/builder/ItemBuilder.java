@@ -69,12 +69,16 @@ public class ItemBuilder implements Cloneable {
 
         if (itemStack.getItemMeta().hasDisplayName())
             this.displayName = itemStack.displayName();
+
         if (itemStack.getItemMeta().hasLore())
-            this.displayLore.add(new LoreSupplier(() -> true, Objects.requireNonNull(itemStack.lore())));
+            this.displayLore.add(new LoreSupplier(() -> true, itemStack.lore()));
+
         if (itemStack.getItemMeta().isUnbreakable())
             this.unbreakable = itemStack.getItemMeta().isUnbreakable();
+
         if (itemStack.getItemMeta().hasEnchants())
             enchants = itemStack.getItemMeta().getEnchants();
+
         if (itemStack.getAmount() > 1)
             this.amount = itemStack.getAmount();
     }
@@ -128,7 +132,7 @@ public class ItemBuilder implements Cloneable {
     public ItemBuilder setDisplayLore(final @NotNull String... miniString) {
         return this.setDisplayLore(new ArrayList<>(List.of(miniString)));
     }
-    public ItemBuilder setDisplayLore(final @NotNull ArrayList<String> miniString) {
+    public ItemBuilder setDisplayLore(final @NotNull List<String> miniString) {
         final ArrayList<Component> list = new ArrayList<>();
         for (final String string : miniString)
             list.add(MiniMessage.miniMessage().deserialize(string));
@@ -164,7 +168,7 @@ public class ItemBuilder implements Cloneable {
     public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull String... miniString) {
         return this.addDisplayLore(supplier, new ArrayList<>(List.of(miniString)));
     }
-    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull ArrayList<String> miniString) {
+    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull List<String> miniString) {
         final ArrayList<Component> list = new ArrayList<>();
         for (final String string : miniString)
             list.add(MiniMessage.miniMessage().deserialize(string));
@@ -173,28 +177,27 @@ public class ItemBuilder implements Cloneable {
     }
 
     public ItemBuilder addDisplayLore(final @NotNull Component... components) {
-        final ArrayList<Component> list = new ArrayList<>();
-        for (final Component component : components)
-            list.addAll(spliterator(component));
-        return this.addDisplayLore(list);
+        return this.addDisplayLore(List.of(components));
     }
     public ItemBuilder addDisplayLore(final @NotNull Collection<Component> components) {
         for (Component component : components) {
             if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
                 component = component.decoration(ITALIC, false);
-            this.displayLore.add(new LoreSupplier(() -> true, List.of(component)));
+            this.addDisplayLore(() -> true, component);
         }
         return this;
     }
 
     public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull Component... components) {
-        final ArrayList<Component> list = new ArrayList<>();
-        for (final Component component : components)
-            list.addAll(spliterator(component));
-        return this.addDisplayLore(supplier, list);
+        return this.addDisplayLore(supplier, List.of(components));
     }
     public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull Collection<Component> components) {
-        for (Component component : components) {
+        final ArrayList<Component> componentList = new ArrayList<>();
+        components.forEach(component -> {
+            componentList.addAll(spliterator(component));
+        });
+
+        for (Component component : componentList) {
             if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
                 component = component.decoration(ITALIC, false);
 
@@ -258,7 +261,7 @@ public class ItemBuilder implements Cloneable {
             final ArrayList<Component> lore = new ArrayList<>();
             for (final LoreSupplier supplier : displayLore)
                 if (supplier.predicate().get())
-                    lore.addAll(supplier.list());
+                    lore.addAll(supplier.components());
             meta.lore(lore);
         }
         if (unbreakable)
@@ -340,5 +343,5 @@ public class ItemBuilder implements Cloneable {
     }
 }
 
-record LoreSupplier(@NotNull Supplier<Boolean> predicate, @NotNull List<Component> list) {
+record LoreSupplier(@NotNull Supplier<Boolean> predicate, @NotNull List<Component> components) {
 }

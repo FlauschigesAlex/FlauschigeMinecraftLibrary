@@ -1,26 +1,56 @@
 package at.flauschigesalex.minecraftLibrary.bukkit;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public final class ComponentManager {
+
     public static ArrayList<Component> spliterator(@NotNull Component component) {
-        final ArrayList<Component> list = new ArrayList<>();
-        if (!component.children().isEmpty()) {
-            final Component withOutChildren = component.children(new ArrayList<>());
-            list.add(withOutChildren);
+        return spliterator(component, new ArrayList<>());
+    }
 
-            for (final Component child : component.children())
-                list.addAll(spliterator(child));
+    private static ArrayList<Component> spliterator(@NotNull Component component, @NotNull ArrayList<Component> list) {
+        Component base = list.isEmpty() ? Component.empty() : list.get(list.size()-1);
+        component = component.replaceText(builder -> {
+            builder.match("<br>").replacement("<newLine>");
+        });
 
-            return list;
+        final Component withoutChild = component.children(List.of());
+        if (withoutChild instanceof TextComponent textComponent && textComponent.content().contains("\n")) {
+            for (final String string : textComponent.content().split("\n")) {
+                if (!string.isBlank() && !string.isEmpty())
+                    base = base.append(Component.text(string).style(textComponent.style()));
+
+                list.add(base);
+                base = Component.empty();
+            }
+        } else if (withoutChild.equals(Component.newline())) {
+            list.add(base);
+            base = Component.empty();
+        } else base = base.append(withoutChild);
+
+        for (final Component child : component.children())
+            spliterator(child, list);
+
+        if (!base.equals(Component.empty()))
+            list.add(base);
+
+        return list;
+    }
+
+    public static Component compromiser(final List<Component> list) {
+        if (list == null || list.isEmpty())
+            return Component.empty();
+
+        Component base = list.get(0);
+        for (int i = 1; i < list.size(); i++) {
+            base = base.append(list.get(i));
         }
 
-        component = component.replaceText(TextReplacementConfig.builder().match("\\n").replacement("").build());
-        list.add(component);
-        return list;
+        return base;
     }
 }

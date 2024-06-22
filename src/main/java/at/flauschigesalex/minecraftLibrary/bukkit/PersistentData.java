@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary.getLibrary;
 
-@SuppressWarnings({"unused", "BooleanMethodIsAlwaysInverted", "unchecked", "rawtypes"})
+@SuppressWarnings({"unused", "BooleanMethodIsAlwaysInverted", "UnusedReturnValue"})
 public final class PersistentData {
 
     private final PersistentDataContainer container;

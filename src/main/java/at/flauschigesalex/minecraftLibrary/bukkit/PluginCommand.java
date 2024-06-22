@@ -19,6 +19,7 @@ import static at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary.get
 public abstract class PluginCommand extends Command {
 
     private String pluginPrefix;
+    private final String command;
 
     protected PluginCommand(@NotNull String command) {
         this(command, "");
@@ -36,6 +37,8 @@ public abstract class PluginCommand extends Command {
         super(command, description, usage, aliases);
         final String pluginName = FlauschigeMinecraftLibrary.getPluginName();
         this.pluginPrefix = pluginName == null ? "flauschigesalex" : pluginName;
+
+        this.command = command;
     }
 
     public final boolean register(final @NotNull CommandMap commandMap) {
@@ -59,7 +62,7 @@ public abstract class PluginCommand extends Command {
         return super.getName();
     }
 
-    public final boolean setName(final @NotNull String name) {
+    public final @Deprecated boolean setName(final @NotNull String name) {
         return super.setName(name);
     }
 
@@ -152,13 +155,15 @@ public abstract class PluginCommand extends Command {
         return super.permissionMessage();
     }
 
-    public final void permissionMessagefinal (final @Nullable Component permissionMessage) {
+    public final void permissionMessagefinal(final @Nullable Component permissionMessage) {
         super.permissionMessage(permissionMessage);
     }
 
-    public boolean execute(final @NotNull CommandSender commandSender, final @NotNull String alias, final @NotNull String[] args) {
-        return false;
+    public final @Deprecated boolean execute(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
+        this.executeCommand(commandSender, s, strings);
+        return true;
     }
+    protected abstract void executeCommand(final @NotNull CommandSender sender, final @NotNull String fullCommand, final @NotNull String[] args);
 
     public @NotNull List<String> tabComplete(final @NotNull CommandSender sender, final @NotNull String alias, final @NotNull String[] args) throws IllegalArgumentException {
         return new ArrayList<>();
@@ -170,10 +175,6 @@ public abstract class PluginCommand extends Command {
 
     public boolean permissible(final @NotNull CommandSender permissible) {
         return super.testPermission(permissible);
-    }
-
-    public boolean isEnabled() {
-        return true;
     }
 
     public PluginCommand setPluginPrefix(final @NotNull String pluginPrefix) {
