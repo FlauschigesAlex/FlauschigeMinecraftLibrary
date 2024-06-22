@@ -11,8 +11,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 
 @SuppressWarnings({"unused"})
 @Getter
@@ -89,8 +89,12 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
             if (getPluginName() == null)
                 break;
             try {
+                if (Modifier.isAbstract(subClass.getModifiers()))
+                    continue;
+
                 final Constructor<?> constructor = subClass.getDeclaredConstructor();
                 constructor.setAccessible(true);
+
                 final PluginCommand command = (PluginCommand) constructor.newInstance();
 
                 Bukkit.getCommandMap().register(command.getName(), command.getPluginPrefix(), command);
@@ -103,8 +107,12 @@ public final class FlauschigeMinecraftLibrary extends FlauschigeLibrary {
             if (getPluginName() == null)
                 break;
             try {
+                if (Modifier.isAbstract(subClass.getModifiers()))
+                    continue;
+
                 final Constructor<?> constructor = subClass.getDeclaredConstructor();
                 constructor.setAccessible(true);
+
                 final PluginListener listener = (PluginListener) constructor.newInstance();
                 if (!listener.isEnabled())
                     continue;
