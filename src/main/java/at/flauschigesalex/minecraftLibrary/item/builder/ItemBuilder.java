@@ -1,5 +1,6 @@
 package at.flauschigesalex.minecraftLibrary.item.builder;
 
+import at.flauschigesalex.defaultLibrary.utils.LibraryException;
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
@@ -15,6 +16,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.List;
@@ -29,7 +31,7 @@ public class ItemBuilder implements Cloneable {
 
     private Material material;
     private Component displayName;
-    private final List<LoreSupplier> displayLore = new ArrayList<>();
+    private final List<Component> displayLore = new ArrayList<>();
 
     private Color leatherColor;
 
@@ -71,7 +73,7 @@ public class ItemBuilder implements Cloneable {
             this.displayName = itemStack.displayName();
 
         if (itemStack.getItemMeta().hasLore())
-            this.displayLore.add(new LoreSupplier(() -> true, itemStack.lore()));
+            this.displayLore.addAll(Objects.requireNonNull(itemStack.lore()));
 
         if (itemStack.getItemMeta().isUnbreakable())
             this.unbreakable = itemStack.getItemMeta().isUnbreakable();
@@ -201,7 +203,7 @@ public class ItemBuilder implements Cloneable {
             if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
                 component = component.decoration(ITALIC, false);
 
-            this.displayLore.add(new LoreSupplier(supplier, List.of(component)));
+            this.displayLore.add(component);
         }
         return this;
     }
@@ -241,29 +243,27 @@ public class ItemBuilder implements Cloneable {
         return this;
     }
 
+    @SneakyThrows
     @SuppressWarnings("deprecation")
     public ItemStack build() {
         if (material == null)
             material = Material.PAPER;
-        ItemStack item = new ItemStack(material);
-        if (!ItemBuilderException.isInventoryCapable(material))
-            throw ItemBuilderException.inventoryFail(material);
+
+        final ItemStack item = new ItemStack(material);
+
+        if (!material.isItem())
+            throw new ItemBuilderException("Material '"+material+"' cannot be displayed in an inventory.");
 
         if (!enchants.isEmpty()) enchants.forEach(item::addUnsafeEnchantment);
 
         final ItemMeta meta = item.getItemMeta();
-        if (meta == null) return
-                item;
+        if (meta == null)
+            return item;
 
         if (displayName != null)
             meta.displayName(displayName);
-        if (!displayLore.isEmpty()) {
-            final ArrayList<Component> lore = new ArrayList<>();
-            for (final LoreSupplier supplier : displayLore)
-                if (supplier.predicate().get())
-                    lore.addAll(supplier.components());
-            meta.lore(lore);
-        }
+        if (!displayLore.isEmpty())
+            meta.lore(new ArrayList<>(displayLore));
         if (unbreakable)
             meta.setUnbreakable(true);
         if (!flags.isEmpty())
@@ -276,7 +276,7 @@ public class ItemBuilder implements Cloneable {
         item.setAmount(amount);
 
         if (container != null)
-            container.copyTo(item.getItemMeta().getPersistentDataContainer(), true);
+            item.getItemMeta().getPersistentDataContainer().readFromBytes(container.serializeToBytes());
         if (!customData.isEmpty()) {
             final PersistentData data = new PersistentData(meta);
             customData.forEach(data::set);
@@ -341,7 +341,11 @@ public class ItemBuilder implements Cloneable {
     public ItemBuilder clone() {
         return (ItemBuilder) super.clone();
     }
+
+    public static final class ItemBuilderException extends LibraryException {
+        private ItemBuilderException(@Nullable String message) {
+            super(message);
+        }
+    }
 }
 
-record LoreSupplier(@NotNull Supplier<Boolean> predicate, @NotNull List<Component> components) {
-}

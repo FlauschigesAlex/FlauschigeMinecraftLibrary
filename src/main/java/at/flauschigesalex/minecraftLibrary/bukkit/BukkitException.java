@@ -27,24 +27,24 @@ public class BukkitException extends LibraryException {
     protected BukkitException(Throwable cause) {
         super(cause);
     }
-}
 
-@SuppressWarnings("unused")
-class ListenerException extends BukkitException {
+    @SuppressWarnings("unused")
+    public static class ListenerException extends BukkitException {
 
-    protected ListenerException() {
-        super();
-    }
+        protected ListenerException() {
+            super();
+        }
 
-    protected ListenerException(Throwable cause) {
-        super(cause);
-    }
+        protected ListenerException(Throwable cause) {
+            super(cause);
+        }
 
-    protected ListenerException(String message) {
-        super(message);
-    }
+        protected ListenerException(String message) {
+            super(message);
+        }
 
-    protected ListenerException(String message, Throwable cause) {
-        super(message, cause);
+        protected ListenerException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }
