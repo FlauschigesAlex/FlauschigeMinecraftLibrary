@@ -1,6 +1,6 @@
 package at.flauschigesalex.minecraftLibrary.translation
 
-import at.flauschigesalex.defaultLibrary.project.task.Task
+import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.defaultLibrary.translation.TranslationException
 import net.kyori.adventure.text.Component
@@ -22,7 +22,8 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
     }
 
     constructor(sender: CommandSender) : this(sender,
-        if (sender is Player) sender.locale() else TranslatedLocale.fallbackLocale().locale)
+        if (sender is Player) sender.locale()
+        else TranslatedLocale.fallbackLocale().locale)
 
     constructor(locale: Locale) : this(null, locale)
     constructor(locale: TranslatedLocale) : this(null, locale)
@@ -63,7 +64,7 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
     }
 
     fun createComponentList(translationKey: String, replacements: Map<String, Any>): List<Component> {
-        return createStringList(translationKey, replacements).stream()
+        return createStringList(translationKey, replacements)
             .map { string: String -> MiniMessage.miniMessage().deserialize(string) }
             .toList()
     }
@@ -77,9 +78,11 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
     }
 
     fun sendMessage(translationKey: String, displayPrefix: Boolean, replacements: Map<String, Any> = mapOf()) {
-        if (sender == null) throw TranslationException("Cannot send message to the player since player is not defined.")
+        if (sender == null)
+            throw TranslationException("Cannot send message to the player since player is not defined.")
 
         val base = if (displayPrefix) prefix ?: Component.empty() else Component.empty()
+
         Task.createAsyncTask { _ ->
             sender.sendMessage(base.append(this.createComponent(translationKey, replacements)))
         }.execute()
@@ -90,14 +93,18 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
             val builder = StringBuilder(list.first)
             list.removeFirst()
 
-            for (append in list) builder.append("<newLine>").append(append)
+            for (append in list)
+                builder.append("<newLine>").append(append)
+
             MiniMessage.miniMessage().deserialize(builder.toString())
         }),
         SQUASH(Function { list: ArrayList<String> ->
             val builder = StringBuilder(list.first)
             list.removeFirst()
 
-            for (append in list) builder.append(" ").append(append)
+            for (append in list)
+                builder.append(" ").append(append)
+
             MiniMessage.miniMessage().deserialize(builder.toString())
         }),
         SUPPRESS(Function { strings: ArrayList<String> -> MiniMessage.miniMessage().deserialize(strings.first) }),
@@ -106,8 +113,7 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
         val function: Function<ArrayList<String>, Component> = func
 
         companion object {
-            val default: ModifyComponent
-                get() = SQUASH
+            var default = SQUASH
         }
     }
 }

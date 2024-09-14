@@ -89,21 +89,31 @@ abstract class PluginCommand protected constructor(val command: String, descript
     override fun tabComplete(sender: CommandSender, alias: String, args: Array<String>, location: Location?): List<String> {
         return tabCompletes(sender).stream()
             .filter { complete: TabComplete ->
-                if (complete.arg == null) return@filter true
+                if (complete.arg == null)
+                    return@filter true
+
                 complete.arg == args.size - 1
             }
             .filter { complete: TabComplete ->
                 val arg = args.size - 1
-                if (arg < 0) return@filter true
+                if (arg < 0)
+                    return@filter true
 
-                if (args[arg].isBlank()) return@filter true
+                if (args[arg].isBlank())
+                    return@filter true
+
                 complete.completable.lowercase(Locale.getDefault()).startsWith(args[arg].lowercase(Locale.getDefault()))
             }
             .filter { complete: TabComplete ->
-                if (complete.location == null || complete.location.world == null) return@filter true
-                if (location == null || location.world == null) return@filter false
+                if (complete.location == null || complete.location.world == null)
+                    return@filter true
 
-                if (complete.maxDistance < 0) return@filter complete.location.world == location.world
+                if (location == null || location.world == null)
+                    return@filter false
+
+                if (complete.maxDistance < 0)
+                    return@filter complete.location.world == location.world
+
                 complete.location.distance(location) <= complete.maxDistance
             }
             .map { complete: TabComplete -> complete.completable }.toList()

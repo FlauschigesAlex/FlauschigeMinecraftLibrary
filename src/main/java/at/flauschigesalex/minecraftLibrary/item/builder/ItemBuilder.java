@@ -8,6 +8,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -21,7 +22,6 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static at.flauschigesalex.minecraftLibrary.bukkit.ComponentManager.*;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
@@ -63,7 +63,9 @@ public class ItemBuilder implements Cloneable {
 
         assert (itemStack.getItemMeta() != null);
         for (final ItemFlag value : ItemFlag.values()) {
-            if (!itemStack.getItemMeta().hasItemFlag(value)) continue;
+            if (!itemStack.getItemMeta().hasItemFlag(value))
+                continue;
+
             flags.add(value);
         }
 
@@ -86,12 +88,28 @@ public class ItemBuilder implements Cloneable {
     }
 
     public ItemBuilder addFlags(final @NotNull ItemFlag... flags) {
-        this.flags.addAll(List.of(flags));
+        return this.addFlags(List.of(flags));
+    }
+    public ItemBuilder addFlags(final @NotNull Collection<ItemFlag> flags) {
+        this.flags.addAll(flags);
         return this;
     }
 
     public ItemBuilder removeFlags(final @NotNull ItemFlag... flags) {
-        this.flags.removeAll(List.of(flags));
+        return this.removeFlags(List.of(flags));
+    }
+    public ItemBuilder removeFlags(final @NotNull Collection<ItemFlag> flags) {
+        this.flags.removeAll(flags);
+        return this;
+    }
+
+    public ItemBuilder setFlags(final @NotNull ItemFlag... flags) {
+        return this.setFlags(List.of(flags));
+    }
+    public ItemBuilder setFlags(final @NotNull Collection<ItemFlag> flags) {
+        this.flags.clear();
+        this.flags.addAll(flags);
+
         return this;
     }
 
@@ -110,13 +128,8 @@ public class ItemBuilder implements Cloneable {
     }
 
     public ItemBuilder removeEnchantments(final @NotNull List<Enchantment> enchantments) {
-        for (final Enchantment enchantment : enchantments)
-            this.removeEnchantment(enchantment);
-        return this;
-    }
-
-    public ItemBuilder removeEnchantment(final @NotNull Enchantment enchantment) {
-        this.enchants.remove(enchantment);
+        for (final Enchantment ench : enchantments)
+            this.enchants.remove(ench);
         return this;
     }
 
@@ -127,6 +140,7 @@ public class ItemBuilder implements Cloneable {
     public ItemBuilder setDisplayName(@NotNull Component component) {
         if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
             component = component.decoration(ITALIC, false);
+
         this.displayName = component;
         return this;
     }
@@ -159,45 +173,18 @@ public class ItemBuilder implements Cloneable {
     public ItemBuilder addDisplayLore(final @NotNull String... miniString) {
         return this.addDisplayLore(new ArrayList<>(List.of(miniString)));
     }
-    public ItemBuilder addDisplayLore(final @NotNull ArrayList<String> miniString) {
-        final ArrayList<Component> list = new ArrayList<>();
-        for (final String string : miniString)
-            list.add(MiniMessage.miniMessage().deserialize(string));
-
-        return this.addDisplayLore(list);
-    }
-
-    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull String... miniString) {
-        return this.addDisplayLore(supplier, new ArrayList<>(List.of(miniString)));
-    }
-    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull List<String> miniString) {
-        final ArrayList<Component> list = new ArrayList<>();
-        for (final String string : miniString)
-            list.add(MiniMessage.miniMessage().deserialize(string));
-
-        return this.addDisplayLore(supplier, list);
+    public ItemBuilder addDisplayLore(final @NotNull List<String> miniString) {
+        return this.addDisplayLore(miniString.stream().map(
+                string -> MiniMessage.miniMessage().deserialize(string)
+        ).toList());
     }
 
     public ItemBuilder addDisplayLore(final @NotNull Component... components) {
         return this.addDisplayLore(List.of(components));
     }
     public ItemBuilder addDisplayLore(final @NotNull Collection<Component> components) {
-        for (Component component : components) {
-            if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
-                component = component.decoration(ITALIC, false);
-            this.addDisplayLore(() -> true, component);
-        }
-        return this;
-    }
-
-    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull Component... components) {
-        return this.addDisplayLore(supplier, List.of(components));
-    }
-    public ItemBuilder addDisplayLore(final @NotNull Supplier<Boolean> supplier, final @NotNull Collection<Component> components) {
         final ArrayList<Component> componentList = new ArrayList<>();
-        components.forEach(component -> {
-            componentList.addAll(spliterator(component));
-        });
+        components.forEach(component -> componentList.addAll(spliterator(component)));
 
         for (Component component : componentList) {
             if (component.decoration(ITALIC) == TextDecoration.State.NOT_SET)
@@ -245,7 +232,7 @@ public class ItemBuilder implements Cloneable {
 
     @SneakyThrows
     @SuppressWarnings("deprecation")
-    public ItemStack build() {
+    public ItemStack item() {
         if (material == null)
             material = Material.PAPER;
 
@@ -254,7 +241,8 @@ public class ItemBuilder implements Cloneable {
         if (!material.isItem())
             throw new ItemBuilderException("Material '"+material+"' cannot be displayed in an inventory.");
 
-        if (!enchants.isEmpty()) enchants.forEach(item::addUnsafeEnchantment);
+        if (!enchants.isEmpty())
+            enchants.forEach(item::addUnsafeEnchantment);
 
         final ItemMeta meta = item.getItemMeta();
         if (meta == null)
@@ -262,12 +250,16 @@ public class ItemBuilder implements Cloneable {
 
         if (displayName != null)
             meta.displayName(displayName);
+
         if (!displayLore.isEmpty())
             meta.lore(new ArrayList<>(displayLore));
+
         if (unbreakable)
             meta.setUnbreakable(true);
+
         if (!flags.isEmpty())
             flags.forEach(meta::addItemFlags);
+
         if (modelData != null)
             meta.setCustomModelData(modelData);
 
@@ -277,6 +269,7 @@ public class ItemBuilder implements Cloneable {
 
         if (container != null)
             item.getItemMeta().getPersistentDataContainer().readFromBytes(container.serializeToBytes());
+
         if (!customData.isEmpty()) {
             final PersistentData data = new PersistentData(meta);
             customData.forEach(data::set);
@@ -292,48 +285,20 @@ public class ItemBuilder implements Cloneable {
         return item;
     }
 
-    public ItemStack buildHead(final @NotNull String offlinePlayer) {
+    public ItemStack skull(final @NotNull String playerName) {
+        return this.skull(Bukkit.getOfflinePlayer(playerName));
+    }
+
+    public ItemStack skull(final @NotNull OfflinePlayer player) {
         material = Material.PLAYER_HEAD;
 
-        final ItemStack item = build();
+        final ItemStack item = item();
         final SkullMeta meta = (SkullMeta) item.getItemMeta();
 
-        meta.setOwningPlayer(Bukkit.getOfflinePlayer(offlinePlayer));
+        meta.setOwningPlayer(player);
         item.setItemMeta(meta);
 
         return item;
-    }
-
-    public ItemStack buildHead(final @NotNull UUID offlinePlayer) {
-        material = Material.PLAYER_HEAD;
-
-        final ItemStack item = build();
-        final SkullMeta meta = (SkullMeta) item.getItemMeta();
-
-        meta.setOwningPlayer(Bukkit.getOfflinePlayer(offlinePlayer));
-        item.setItemMeta(meta);
-
-        return item;
-    }
-
-    public ItemStack item() {
-        return build();
-    }
-
-    public ItemStack head(final @NotNull String offlinePlayer) {
-        return buildHead(offlinePlayer);
-    }
-
-    public ItemStack head(final @NotNull UUID offlinePlayer) {
-        return buildHead(offlinePlayer);
-    }
-
-    public ItemStack skull(final @NotNull String offlinePlayer) {
-        return buildHead(offlinePlayer);
-    }
-
-    public ItemStack skull(final @NotNull UUID offlinePlayer) {
-        return buildHead(offlinePlayer);
     }
 
     @SneakyThrows

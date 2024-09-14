@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public final class ComponentManager {
 
     public static ArrayList<Component> spliterator(@NotNull Component component) {
@@ -14,10 +15,8 @@ public final class ComponentManager {
     }
 
     private static ArrayList<Component> spliterator(@NotNull Component component, @NotNull ArrayList<Component> list) {
-        Component base = list.isEmpty() ? Component.empty() : list.get(list.size()-1);
-        component = component.replaceText(builder -> {
-            builder.match("<br>").replacement("<newLine>");
-        });
+        Component base = list.isEmpty() ? Component.empty() : list.getLast();
+        component = component.replaceText(builder -> builder.match("<br>").replacement("<newLine>"));
 
         final Component withoutChild = component.children(List.of());
         if (withoutChild instanceof TextComponent textComponent && textComponent.content().contains("\n")) {
@@ -46,7 +45,7 @@ public final class ComponentManager {
         if (list == null || list.isEmpty())
             return Component.empty();
 
-        Component base = list.get(0);
+        Component base = list.getFirst();
         for (int i = 1; i < list.size(); i++) {
             base = base.append(list.get(i));
         }

@@ -17,15 +17,16 @@ class TranslatedItem(key: String, material: Material) {
 
     companion object {
         private val empty = Consumer { _: ItemBuilder? -> }
-        private val buildConsumer = Consumer<TranslatedItemHandler> { parent ->
+        private val buildConsumer = Consumer { parent: TranslatedItemHandler ->
             val locale: TranslatedLocale = TranslatedLocale.of(parent.player)
             val handler = TranslationHandler(locale)
 
-            val displayKeys =
-                arrayOf(parent.translationKey + ".displayName", parent.translationKey + ".displayLore")
-            if (locale.has(displayKeys[0])) parent.builder.setDisplayName(
-                    handler.createComponent(displayKeys[0], TranslationHandler.ModifyComponent.SQUASH)
-            )
+            val displayKeys = arrayOf(parent.translationKey + ".displayName",
+                parent.translationKey + ".displayLore")
+
+            if (locale.has(displayKeys[0]))
+                parent.builder.setDisplayName(handler.createComponent(displayKeys[0],
+                    TranslationHandler.ModifyComponent.SQUASH))
 
             if (locale.has(displayKeys[1]))
                 parent.builder.setDisplayLore(handler.createComponentList(displayKeys[1]))
@@ -85,7 +86,7 @@ class TranslatedItem(key: String, material: Material) {
         val builder = ItemBuilder(material)
         buildConsumer.andThen { _: TranslatedItemHandler? -> consumer.accept(builder) }
             .accept(TranslatedItemHandler(builder, player, translationKey, replacements))
-        return builder.head(uuid)
+        return builder.skull(uuid)
     }
 
     private data class TranslatedItemHandler(

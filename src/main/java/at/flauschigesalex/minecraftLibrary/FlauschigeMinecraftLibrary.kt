@@ -42,16 +42,17 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
         }
 
         for (subClass in reflector.reflect().getSubClasses(PluginListener::class.java)) {
-            if (pluginName == null) break
+            if (pluginName == null)
+                break
+
             try {
-                if (Modifier.isAbstract(subClass.modifiers)) continue
+                if (Modifier.isAbstract(subClass.modifiers))
+                    continue
 
                 val constructor = subClass.getDeclaredConstructor()
                 constructor.isAccessible = true
 
                 val listener = constructor.newInstance() as PluginListener
-                if (!listener.isEnabled) continue
-
                 val plugin = Bukkit.getPluginManager().getPlugin(pluginName!!) ?: break
 
                 Bukkit.getPluginManager().registerEvents(listener, plugin)
@@ -60,7 +61,8 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
             }
         }
 
-        if (pluginName == null) throw BukkitException.bukkitNotFoundException
+        if (pluginName == null)
+            throw BukkitException.bukkitNotFoundException
 
         return this
     }
@@ -96,30 +98,8 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
          * @return an instance of the Library
          * @see .getLibrary
          */
-        @JvmStatic fun getLibrary(autoRegisterManagers: Boolean): FlauschigeMinecraftLibrary {
-            FlauschigeLibrary.autoRegisterManagers = autoRegisterManagers
-            return library
-        }
-
-        /**
-         * Make sure to run this method in your main class!
-         * This is extremely important for reflections!
-         *
-         * @return an instance of the Library
-         * @see .getLibrary
-         */
         @JvmStatic fun getLibrary(javaPlugin: JavaPlugin): FlauschigeMinecraftLibrary {
             return library.setPlugin(javaPlugin)
-        }
-
-        /**
-         * Make sure to run this method in your main class!
-         * This is extremely important for reflections!
-         *
-         * @return an instance of the Library
-         */
-        @JvmStatic fun getLibrary(autoRegisterManagers: Boolean, javaPlugin: JavaPlugin): FlauschigeMinecraftLibrary {
-            return getLibrary(autoRegisterManagers).setPlugin(javaPlugin)
         }
     }
 }
