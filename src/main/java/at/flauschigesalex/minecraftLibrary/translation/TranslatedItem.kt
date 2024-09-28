@@ -1,22 +1,29 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package at.flauschigesalex.minecraftLibrary.translation
 
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.defaultLibrary.translation.TranslationException
 import at.flauschigesalex.defaultLibrary.translation.TranslationValidator
-import at.flauschigesalex.minecraftLibrary.item.builder.ItemBuilder
-import lombok.Getter
+import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
+import at.flauschigesalex.minecraftLibrary.bukkit.ui.ItemBuilder
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import java.util.*
 import java.util.function.Consumer
 
-@Suppress("unused", "MemberVisibilityCanBePrivate")
-@Getter
+fun ItemStack.isTranslated(function: (PersistentData) -> Unit = {}): Boolean {
+    val data = PersistentData(this.itemMeta)
+    if (!data.contains("translationKey"))
+        return false
+
+    function.invoke(data)
+    return true
+}
+
 class TranslatedItem(key: String, material: Material) {
 
     companion object {
-        private val empty = Consumer { _: ItemBuilder? -> }
         private val buildConsumer = Consumer { parent: TranslatedItemHandler ->
             val locale: TranslatedLocale = TranslatedLocale.of(parent.player)
             val handler = TranslationHandler(locale)
@@ -35,11 +42,10 @@ class TranslatedItem(key: String, material: Material) {
         }
     }
 
-    private val translationKey: String
-    private val material: Material
+    val translationKey: String
+    val material: Material
 
-    @Deprecated("")
-    constructor(translationKey: String) : this(translationKey, Material.PAPER)
+    constructor(key: String) : this(key, Material.PAPER)
 
     init {
         var translationKey = key
@@ -51,40 +57,16 @@ class TranslatedItem(key: String, material: Material) {
         this.material = material
     }
 
-    fun item(player: Player, consumer: Consumer<ItemBuilder?>): ItemStack {
-        return item(player, mapOf(), consumer)
-    }
-
-    fun item(player: Player, replacements: Map<String, Any> = mapOf(), consumer: Consumer<ItemBuilder?> = empty): ItemStack {
+    fun item(player: Player, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {} ): ItemStack {
         val builder = ItemBuilder(material)
-        buildConsumer.andThen { _: TranslatedItemHandler? -> consumer.accept(builder) }
+        buildConsumer.andThen { _: TranslatedItemHandler? -> consumer.invoke(builder) }
             .accept(TranslatedItemHandler(builder, player, translationKey, replacements))
         return builder.item()
     }
 
-    fun headItem(player: Player, uuid: UUID): ItemStack {
-        return headItem(player, uuid.toString())
-    }
-
-    fun headItem(player: Player, uuid: UUID, replacements: Map<String, Any>): ItemStack {
-        return headItem(player, uuid.toString(), replacements)
-    }
-
-    fun headItem(player: Player, uuid: UUID, consumer: Consumer<ItemBuilder?>): ItemStack {
-        return headItem(player, uuid.toString(), consumer)
-    }
-
-    fun headItem(player: Player, uuid: String, consumer: Consumer<ItemBuilder?>): ItemStack {
-        return headItem(player, uuid, mapOf(), consumer)
-    }
-
-    fun headItem(player: Player, uuid: UUID, replacements: Map<String, Any>, consumer: Consumer<ItemBuilder?>): ItemStack {
-        return headItem(player, uuid.toString(), replacements, consumer)
-    }
-
-    fun headItem(player: Player, uuid: String, replacements: Map<String, Any> = mapOf(), consumer: Consumer<ItemBuilder?> = empty): ItemStack {
+    fun skull(player: Player, uuid: String, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {}): ItemStack {
         val builder = ItemBuilder(material)
-        buildConsumer.andThen { _: TranslatedItemHandler? -> consumer.accept(builder) }
+        buildConsumer.andThen { _: TranslatedItemHandler? -> consumer.invoke(builder) }
             .accept(TranslatedItemHandler(builder, player, translationKey, replacements))
         return builder.skull(uuid)
     }

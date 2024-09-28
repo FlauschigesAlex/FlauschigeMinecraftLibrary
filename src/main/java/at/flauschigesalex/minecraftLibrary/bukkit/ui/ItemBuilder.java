@@ -1,4 +1,4 @@
-package at.flauschigesalex.minecraftLibrary.item.builder;
+package at.flauschigesalex.minecraftLibrary.bukkit.ui;
 
 import at.flauschigesalex.defaultLibrary.utils.LibraryException;
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData;
