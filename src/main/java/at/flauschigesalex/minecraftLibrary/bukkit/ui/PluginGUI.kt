@@ -98,10 +98,10 @@ abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 5
         }.repeatDelayed(TimeUnit.MILLISECONDS, max(50 * autoUpdateTickDelay, 1).toLong())
     }
 
-    open fun reloadForAllViewers(loadBackground: Boolean = true, loadAsync: Boolean = false) {
-        viewers.forEach { reload(it, loadBackground, loadAsync) }
+    open fun reloadForAllViewers(loadBackground: Boolean = false) {
+        viewers.forEach { reload(it, loadBackground) }
     }
-    open fun reload(player: Player, loadBackground: Boolean = true, loadAsync: Boolean = false): Boolean {
+    open fun reload(player: Player, loadBackground: Boolean = false): Boolean {
         if (player.getOpenGUI() != this)
             return false
 
@@ -110,17 +110,15 @@ abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 5
         if (loadBackground)
             this.designGUI(player, gui)
 
-        if (loadAsync) {
-            Task.createAsyncTask {
-                this.loadGUI(player, gui)
-            }.execute()
-        } else this.loadGUI(player, gui)
+        Task.createAsyncTask {
+            this.loadGUI(player, gui)
+        }.execute()
         return true
     }
 
-    open fun open(player: Player, loadAsync: Boolean = false) {
+    open fun open(player: Player) {
         if (player.getOpenGUI() == this) {
-            this.reload(player, loadAsync = loadAsync)
+            this.reload(player, true)
             return
         }
 
@@ -129,11 +127,9 @@ abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 5
 
         this.designGUI(player, gui)
 
-        if (loadAsync) {
-            Task.createAsyncTask {
-                this.loadGUI(player, gui)
-            }.execute()
-        } else this.loadGUI(player, gui)
+        Task.createAsyncTask {
+            this.loadGUI(player, gui)
+        }.execute()
 
         player.openInventory(gui)
         this.onOpen(player, gui)

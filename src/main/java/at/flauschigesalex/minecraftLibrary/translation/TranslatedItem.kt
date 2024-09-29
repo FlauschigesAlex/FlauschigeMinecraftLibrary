@@ -33,10 +33,10 @@ class TranslatedItem(key: String, material: Material) {
 
             if (locale.has(displayKeys[0]))
                 parent.builder.setDisplayName(handler.createComponent(displayKeys[0],
-                    TranslationHandler.ModifyComponent.SQUASH))
+                    TranslationHandler.ModifyComponent.SQUASH, parent.replacements))
 
             if (locale.has(displayKeys[1]))
-                parent.builder.setDisplayLore(handler.createComponentList(displayKeys[1]))
+                parent.builder.setDisplayLore(handler.createComponentList(displayKeys[1], parent.replacements))
 
             parent.builder.addPersistentData("translationKey", parent.translationKey)
         }

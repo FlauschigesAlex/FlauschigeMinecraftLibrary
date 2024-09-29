@@ -175,7 +175,7 @@ public class ItemBuilder implements Cloneable {
     }
     public ItemBuilder addDisplayLore(final @NotNull List<String> miniString) {
         return this.addDisplayLore(miniString.stream().map(
-                string -> MiniMessage.miniMessage().deserialize(string)
+                string -> MiniMessage.miniMessage().deserialize(string.isEmpty() ? " " : string)
         ).toList());
     }
 

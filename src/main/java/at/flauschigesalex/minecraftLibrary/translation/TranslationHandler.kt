@@ -34,20 +34,18 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
         return locale
     }
 
-    fun createComponent(translationKey: String, replacements: Map<String, Any> = mapOf()): Component {
-        return createComponent(translationKey, ModifyComponent.default, replacements)
-    }
-
     fun createComponent(
         translationKey: String,
-        modifyComponent: ModifyComponent,
+        modifyComponent: ModifyComponent = ModifyComponent.default,
         replacements: Map<String, Any> = mapOf()
     ): Component {
-        return modifyComponent.function.apply(ArrayList(createStringList(translationKey, replacements)))
+         return modifyComponent.function.apply(ArrayList(createStringList(translationKey, replacements)))
     }
 
-    fun createComponentList(translationKey: String): List<Component> {
-        return this.createComponentList(translationKey, mapOf())
+    fun createComponentList(translationKey: String, replacements: Map<String, Any> = mapOf()): List<Component> {
+        return createStringList(translationKey, replacements)
+            .map { string: String -> MiniMessage.miniMessage().deserialize(string) }
+            .toList()
     }
 
     private fun createStringList(translationKey: String, replacements: Map<String, Any>): List<String> {
@@ -61,12 +59,6 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
         if (found.startsWith(spacer)) found = found.substring(spacer.length)
 
         return listOf(*found.split(spacer.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
-    }
-
-    fun createComponentList(translationKey: String, replacements: Map<String, Any>): List<Component> {
-        return createStringList(translationKey, replacements)
-            .map { string: String -> MiniMessage.miniMessage().deserialize(string) }
-            .toList()
     }
 
     fun sendMessage(translationKey: String) {
@@ -84,7 +76,7 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
         val base = if (displayPrefix) prefix ?: Component.empty() else Component.empty()
 
         Task.createAsyncTask { _ ->
-            sender.sendMessage(base.append(this.createComponent(translationKey, replacements)))
+            sender.sendMessage(base.append(this.createComponent(translationKey, replacements = replacements)))
         }.execute()
     }
 

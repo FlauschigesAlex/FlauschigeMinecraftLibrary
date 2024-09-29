@@ -45,9 +45,9 @@ abstract class TranslatedGUI(
         return false
     }
 
-    override fun open(player: Player, loadAsync: Boolean) {
+    override fun open(player: Player) {
         if (player.getOpenGUI() == this) {
-            this.reload(player, loadAsync = loadAsync)
+            this.reload(player)
             return
         }
         this.onLoad(player)
@@ -59,11 +59,9 @@ abstract class TranslatedGUI(
 
             this.designGUI(player, gui)
 
-            if (loadAsync) {
-                Task.createAsyncTask {
-                    this.loadGUI(player, gui)
-                }.execute()
-            } else this.loadGUI(player, gui)
+            Task.createAsyncTask {
+                this.loadGUI(player, gui)
+            }.execute()
 
             Bukkit.getScheduler().runTask(FlauschigeMinecraftLibrary.library.plugin, Runnable {
 
