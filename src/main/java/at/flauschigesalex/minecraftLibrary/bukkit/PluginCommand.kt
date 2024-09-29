@@ -73,11 +73,12 @@ abstract class PluginCommand protected constructor(val command: String, descript
 
     protected abstract fun executeCommand(sender: CommandSender, fullCommand: String, args: Array<String>)
 
-    protected fun tabCompletes(sender: CommandSender?): Set<TabComplete> {
+    protected open fun tabCompletes(sender: CommandSender?): Set<TabComplete> {
         return TabComplete.onlinePlayers(if (sender is Player) sender else null)
     }
 
-    @Deprecated("") @Throws(IllegalArgumentException::class) override fun tabComplete(
+    @Deprecated("") @Throws(IllegalArgumentException::class)
+    final override fun tabComplete(
         sender: CommandSender,
         alias: String,
         args: Array<String>
@@ -86,7 +87,7 @@ abstract class PluginCommand protected constructor(val command: String, descript
     }
 
     @Deprecated("") @Throws(IllegalArgumentException::class)
-    override fun tabComplete(sender: CommandSender, alias: String, args: Array<String>, location: Location?): List<String> {
+    final override fun tabComplete(sender: CommandSender, alias: String, args: Array<String>, location: Location?): List<String> {
         return tabCompletes(sender).stream()
             .filter { complete: TabComplete ->
                 if (complete.arg == null)
