@@ -1,4 +1,4 @@
-@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate", "DEPRECATION")
 
 package at.flauschigesalex.minecraftLibrary.bukkit.ui
 
@@ -25,16 +25,18 @@ import kotlin.math.max
 /**
  * @since v1.5.0
  */
-abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 54) Int,
-                                               protected val autoUpdateTickDelay: @Range(
-                                                   from = 1,
-                                                   to = Long.MAX_VALUE
-                                               ) Int = 0,
-                                               protected val title: Component = Component.text(" ")
+abstract class PluginGUI protected constructor(
+    open val size: @Range(from = 9, to = 54) Int,
+    protected val autoUpdateTickDelay: @Range(
+        from = 1,
+        to = Long.MAX_VALUE
+    ) Int = 0,
+    protected open val title: Component = Component.text(" ")
 ) {
 
     companion object {
-        internal var openGUIs = hashMapOf<UUID, PluginGUI>()
+        @Deprecated("")
+        val openGUIs = hashMapOf<UUID, PluginGUI>()
 
         @JvmStatic
         fun HumanEntity.getOpenGUI(): PluginGUI? {
@@ -45,13 +47,15 @@ abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 5
     }
 
     init {
-        if (size < 9)
+        this.apply {
+            if (size < 9)
             throw BukkitException("Inventory size of ${this::class.java.simpleName} must not be smaller than 9.")
         if (size > 54)
             throw BukkitException("Inventory size of ${this::class.java.simpleName} must not be larger than 54.")
 
         if (size % 9 != 0)
             throw BukkitException("Inventory size of ${this::class.java.simpleName} must be dividable by 9.")
+        }
     }
 
     protected open fun createGUI(player: Player): Inventory {
@@ -59,21 +63,21 @@ abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 5
     }
     protected open fun designGUI(player: Player, inventory: Inventory) {}
     protected open fun loadGUI(player: Player, inventory: Inventory) {}
-    protected open fun loadAsyncGUI(player: Player, inventory: Inventory) {
+    protected open fun loadLiveGUI(player: Player, inventory: Inventory) {
         return loadGUI(player, inventory)
     }
 
     open fun onClick(clickEvent: PluginGUIClick): Boolean {
         return false
     }
-    open fun onOpen(player: Player, gui: Inventory): Boolean {
+    open fun onOpen(player: Player, inventory: Inventory): Boolean {
         return false
     }
-    open fun onClose(player: Player, gui: Inventory): Boolean {
+    open fun onClose(player: Player, inventory: Inventory): Boolean {
         return false
     }
 
-    internal fun liveInventory(player: Player, gui: Inventory) {
+    protected fun liveInventory(player: Player, inventory: Inventory) {
         if (autoUpdateTickDelay <= 0)
             return
 
@@ -93,7 +97,7 @@ abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 5
                 return@createAsyncTask
             }
 
-            this.loadAsyncGUI(player, gui)
+            this.loadLiveGUI(player, inventory)
 
         }.repeatDelayed(TimeUnit.MILLISECONDS, max(50 * autoUpdateTickDelay, 1).toLong())
     }
@@ -110,9 +114,7 @@ abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 5
         if (loadBackground)
             this.designGUI(player, gui)
 
-        Task.createAsyncTask {
-            this.loadGUI(player, gui)
-        }.execute()
+        this.loadGUI(player, gui)
         return true
     }
 
@@ -126,10 +128,7 @@ abstract class PluginGUI protected constructor(val size: @Range(from = 9, to = 5
         openGUIs[player.uniqueId] = this
 
         this.designGUI(player, gui)
-
-        Task.createAsyncTask {
-            this.loadGUI(player, gui)
-        }.execute()
+        this.loadGUI(player, gui)
 
         player.openInventory(gui)
         this.onOpen(player, gui)
@@ -187,13 +186,13 @@ data class PluginGUIClick(val player: Player,
                           val clickedSlot: Int,
                           val clickType: ClickType,
                           val cursorItem: ItemStack?,
-                          internal val event: InventoryClickEvent,
+                          @Deprecated("") val bukkitEvent: InventoryClickEvent,
 ) {
     fun cancelEvent() {
-        event.isCancelled = true
+        bukkitEvent.isCancelled = true
     }
 
     override fun toString(): String {
-        return listOf(player, gui, inventory, clickedItem, clickedSlot, clickType, cursorItem, event).toString()
+        return listOf(player, gui, inventory, clickedItem, clickedSlot, clickType, cursorItem, bukkitEvent).toString()
     }
 }

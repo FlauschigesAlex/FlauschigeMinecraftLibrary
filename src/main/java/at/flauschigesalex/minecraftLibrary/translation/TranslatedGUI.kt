@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("MemberVisibilityCanBePrivate", "unused", "DeprecatedCallableAddReplaceWith")
 
 package at.flauschigesalex.minecraftLibrary.translation
 
@@ -14,13 +14,17 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.jetbrains.annotations.Range
 
-abstract class TranslatedGUI(
+abstract class TranslatedGUI protected constructor(
     val translationKey: String,
     protected val titleCreator: Pair<(Player, Map<String, Any>) -> Component, Map<String, Any>> =
         Pair({ player, _ -> TranslationHandler(player).createComponent("$translationKey.inventoryName") }, mapOf()),
-    size: @Range(from = 9.toLong(), to = 54.toLong()) Int,
+    final override val size: @Range(from = 9.toLong(), to = 54.toLong()) Int,
     autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0
 ) : PluginGUI(size, autoUpdateTickDelay) {
+
+    @Deprecated("")
+    override val title: Component
+        get() = super.title
 
     init {
         TranslationValidator.validateKey(translationKey)
@@ -30,14 +34,14 @@ abstract class TranslatedGUI(
         return Bukkit.createInventory(player, size, titleCreator.first.invoke(player, titleCreator.second))
     }
 
-    protected open fun onLoad(player: Player) {}
+    protected open fun preLoad(player: Player) {}
 
     @Deprecated("")
     final override fun onClick(clickEvent: PluginGUIClick): Boolean {
         if (super.onClick(clickEvent))
             return true
 
-        val translationKey = clickEvent.clickedItem?.let { PersistentData(it.itemMeta).get("translationKey") }
+        val translationKey = clickEvent.clickedItem?.let { PersistentData(it.itemMeta, FlauschigeMinecraftLibrary.getLibrary().plugin).get("translationKey") }
         return onClick(clickEvent, translationKey)
     }
 
@@ -50,7 +54,7 @@ abstract class TranslatedGUI(
             this.reload(player)
             return
         }
-        this.onLoad(player)
+        this.preLoad(player)
 
         Task.createAsyncTask {
 
@@ -58,12 +62,9 @@ abstract class TranslatedGUI(
             openGUIs[player.uniqueId] = this
 
             this.designGUI(player, gui)
+            this.loadGUI(player, gui)
 
-            Task.createAsyncTask {
-                this.loadGUI(player, gui)
-            }.execute()
-
-            Bukkit.getScheduler().runTask(FlauschigeMinecraftLibrary.library.plugin, Runnable {
+            Bukkit.getScheduler().runTask(FlauschigeMinecraftLibrary.getLibrary().plugin, Runnable {
 
                 player.openInventory(gui)
                 this.onOpen(player, gui)

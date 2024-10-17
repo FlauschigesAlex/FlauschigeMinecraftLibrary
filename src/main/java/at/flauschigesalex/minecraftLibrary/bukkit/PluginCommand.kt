@@ -2,8 +2,7 @@
 
 package at.flauschigesalex.minecraftLibrary.bukkit
 
-import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary.Companion.library
-import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary.Companion.pluginName
+import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
@@ -29,8 +28,8 @@ abstract class PluginCommand protected constructor(val command: String, descript
     )
 
     init {
-        val pluginName = pluginName
-        this.pluginPrefix = pluginName?.lowercase(Locale.getDefault()) ?: "flauschigesalex"
+        val pluginName = FlauschigeMinecraftLibrary.getLibrary().plugin.name
+        this.pluginPrefix = pluginName.lowercase(Locale.getDefault())
     }
 
     @Deprecated("", ReplaceWith("this.command")) override fun setName(name: String): Boolean {
@@ -48,10 +47,7 @@ abstract class PluginCommand protected constructor(val command: String, descript
     }
 
     override fun getLabel(): String {
-        library
-        if (pluginName != null) return pluginName!!
-
-        return super.getLabel()
+        return pluginPrefix
     }
 
     @Deprecated("") override fun getPermissionMessage(): String? {

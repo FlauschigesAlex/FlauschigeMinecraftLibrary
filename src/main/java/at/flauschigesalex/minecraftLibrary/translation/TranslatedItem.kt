@@ -5,15 +5,20 @@ package at.flauschigesalex.minecraftLibrary.translation
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.defaultLibrary.translation.TranslationException
 import at.flauschigesalex.defaultLibrary.translation.TranslationValidator
+import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.ItemBuilder
+import com.destroystokyo.paper.profile.PlayerProfile
+import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import java.util.UUID
 import java.util.function.Consumer
 
 fun ItemStack.isTranslated(function: (PersistentData) -> Unit = {}): Boolean {
-    val data = PersistentData(this.itemMeta)
+    val data = PersistentData(this.itemMeta, FlauschigeMinecraftLibrary.getLibrary().plugin)
     if (!data.contains("translationKey"))
         return false
 
@@ -64,11 +69,17 @@ class TranslatedItem(key: String, material: Material) {
         return builder.item()
     }
 
-    fun skull(player: Player, uuid: String, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {}): ItemStack {
+    fun skull(player: Player, uuid: UUID, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {}): ItemStack {
+        return this.skull(player, Bukkit.getOfflinePlayer(uuid), replacements, consumer)
+    }
+    fun skull(player: Player, offlinePlayer: OfflinePlayer, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {}): ItemStack {
+        return this.skull(player, offlinePlayer.playerProfile, replacements, consumer)
+    }
+    fun skull(player: Player, profile: PlayerProfile, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {}): ItemStack {
         val builder = ItemBuilder(material)
         buildConsumer.andThen { _: TranslatedItemHandler? -> consumer.invoke(builder) }
             .accept(TranslatedItemHandler(builder, player, translationKey, replacements))
-        return builder.skull(uuid)
+        return builder.skull(profile)
     }
 
     private data class TranslatedItemHandler(
