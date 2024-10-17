@@ -3,11 +3,12 @@
   <groupId>at.flauschigesalex</groupId>
   <artifactId>FlauschigeMinecraftLibrary</artifactId>
   <versioning>
-    <release>v1.5.1</release>
+    <release>v1.6.0</release>
     <versions>
       <version>v1.5.0</version>
       <version>v1.5.1</version>
+      <version>v1.6.0</version>
     </versions>
-    <lastUpdated>20241017213003</lastUpdated>
+    <lastUpdated>20241017224719</lastUpdated>
   </versioning>
 </metadata>
