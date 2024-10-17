@@ -1,14 +1,11 @@
 package at.flauschigesalex.minecraftLibrary.bukkit;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-
-import static at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary.getLibrary;
 
 @SuppressWarnings({"unused", "BooleanMethodIsAlwaysInverted", "UnusedReturnValue"})
 public final class PersistentData {
@@ -16,9 +13,6 @@ public final class PersistentData {
     private final PersistentDataContainer container;
     private final Plugin plugin;
 
-    public PersistentData(final @NotNull PersistentDataHolder container) {
-        this(container, getLibrary().getPlugin());
-    }
     public PersistentData(final @NotNull PersistentDataHolder container, final @NotNull Plugin plugin) {
         this.container = container.getPersistentDataContainer();
         this.plugin = plugin;

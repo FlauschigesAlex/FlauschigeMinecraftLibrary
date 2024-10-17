@@ -1,7 +1,9 @@
 package at.flauschigesalex.minecraftLibrary.bukkit.ui;
 
 import at.flauschigesalex.defaultLibrary.utils.LibraryException;
+import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary;
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData;
+import com.destroystokyo.paper.profile.PlayerProfile;
 import lombok.SneakyThrows;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -271,7 +273,7 @@ public class ItemBuilder implements Cloneable {
             item.getItemMeta().getPersistentDataContainer().readFromBytes(container.serializeToBytes());
 
         if (!customData.isEmpty()) {
-            final PersistentData data = new PersistentData(meta);
+            final PersistentData data = new PersistentData(meta, FlauschigeMinecraftLibrary.getLibrary().getPlugin());
             customData.forEach(data::set);
             item.setItemMeta(meta);
         }
@@ -290,12 +292,17 @@ public class ItemBuilder implements Cloneable {
     }
 
     public ItemStack skull(final @NotNull OfflinePlayer player) {
+        return this.skull(player.getPlayerProfile());
+    }
+
+    public ItemStack skull(final @NotNull PlayerProfile profile) {
         material = Material.PLAYER_HEAD;
 
         final ItemStack item = item();
         final SkullMeta meta = (SkullMeta) item.getItemMeta();
 
-        meta.setOwningPlayer(player);
+        profile.complete();
+        meta.setPlayerProfile(profile);
         item.setItemMeta(meta);
 
         return item;

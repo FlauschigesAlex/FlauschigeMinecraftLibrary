@@ -1,6 +1,7 @@
 package at.flauschigesalex.minecraftLibrary
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
+import at.flauschigesalex.defaultLibrary.reflections.Reflector
 import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.minecraftLibrary.bukkit.BukkitException
 import at.flauschigesalex.minecraftLibrary.bukkit.PluginCommand
@@ -18,57 +19,43 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
     companion object {
         private var flauschigeMinecraftLibrary: FlauschigeMinecraftLibrary? = null
 
-        @JvmStatic
-        var pluginName: String? = null
-            private set
+        private var javaPluginInstance: JavaPlugin? = null
 
-        /**
-         * Make sure to run this method in your main class!
-         * This is extremely important for reflections!
-         *
-         * @return an instance of the Library
-         * @see .getLibrary
-         */
-        @JvmStatic val library: FlauschigeMinecraftLibrary get() {
-            if (flauschigeMinecraftLibrary == null)
-                flauschigeMinecraftLibrary = FlauschigeMinecraftLibrary()
-            return flauschigeMinecraftLibrary!!
+        private val library = null
+
+        @JvmStatic
+        fun getLibrary(): FlauschigeMinecraftLibrary {
+            return getLibrary(javaPluginInstance!!)
         }
 
-        /**
-         * Make sure to run this method in your main class!
-         * This is extremely important for reflections!
-         *
-         * @return an instance of the Library
-         * @see .getLibrary
-         */
-        @JvmStatic fun getLibrary(javaPlugin: JavaPlugin): FlauschigeMinecraftLibrary {
-            return library.setPlugin(javaPlugin)
+        @JvmStatic
+        fun getLibrary(plugin: JavaPlugin = javaPluginInstance!!): FlauschigeMinecraftLibrary {
+
+            if (flauschigeMinecraftLibrary == null)
+                flauschigeMinecraftLibrary = FlauschigeMinecraftLibrary()
+
+            if (javaPluginInstance == null)
+                flauschigeMinecraftLibrary!!.setPlugin(plugin)
+
+            return flauschigeMinecraftLibrary!!
         }
     }
 
     val plugin: Plugin get() {
-        if (pluginName == null)
-            throw NullPointerException("Could not retrieve plugin because plugin-name is null!")
-
-        val plugin = Bukkit.getPluginManager().getPlugin(pluginName!!)
-            ?: throw NullPointerException("Could not retrieve plugin because plugin '$pluginName' does not exist.")
-
-        return plugin
+        return javaPluginInstance ?: throw BukkitException.bukkitNotFoundException
     }
+
     private val pluginShutdownHooks = HashSet<() -> Unit>()
 
     private fun setPlugin(javaPlugin: JavaPlugin): FlauschigeMinecraftLibrary {
-        pluginName = javaPlugin.name
+        javaPluginInstance = javaPlugin
 
-        if (pluginName == null)
-            throw BukkitException.bukkitNotFoundException
-
-        for (subClass in reflector.reflect().getSubClasses(PluginCommand::class.java)) {
+        for (commandClass in Reflector.reflect().getSubTypes(PluginCommand::class.java)) {
             try {
-                if (Modifier.isAbstract(subClass.modifiers)) continue
+                if (Modifier.isAbstract(commandClass.modifiers))
+                    continue
 
-                val constructor = subClass.getDeclaredConstructor()
+                val constructor = commandClass.getDeclaredConstructor()
                 constructor.isAccessible = true
 
                 val command = constructor.newInstance() as PluginCommand
@@ -79,16 +66,16 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
             }
         }
 
-        for (subClass in reflector.reflect().getSubClasses(PluginListener::class.java)) {
+        for (listenerClass in Reflector.reflect().getSubTypes(PluginListener::class.java)) {
             try {
-                if (Modifier.isAbstract(subClass.modifiers))
+                if (Modifier.isAbstract(listenerClass.modifiers))
                     continue
 
-                val constructor = subClass.getDeclaredConstructor()
+                val constructor = listenerClass.getDeclaredConstructor()
                 constructor.isAccessible = true
 
                 val listener = constructor.newInstance() as PluginListener
-                val plugin = Bukkit.getPluginManager().getPlugin(pluginName!!) ?: break
+                val plugin = javaPluginInstance ?: break
 
                 Bukkit.getPluginManager().registerEvents(listener, plugin)
             } catch (fail: Exception) {
@@ -97,15 +84,14 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
         }
 
         Task.createAsyncTask { optional ->
-            val bukkitPlugin = Bukkit.getPluginManager().getPlugin(pluginName!!)
-            if (bukkitPlugin != null)
-                return@createAsyncTask
+            javaPluginInstance?.name?.let { Bukkit.getPluginManager().getPlugin(it) } ?: return@createAsyncTask
 
             optional.ifPresent { it.stop() }
             pluginShutdownHooks.forEach { it.invoke() }
 
         }.repeatDelayed(TimeUnit.MILLISECONDS, 25)
 
+        @Suppress("DEPRECATION")
         this.addPluginShutdownHook {
             PluginGUI.controllers.forEach { it.stop() }
         }
