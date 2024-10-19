@@ -90,10 +90,13 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     final override fun onClick(clickEvent: PluginGUIClick): Boolean {
-        val text = (clickEvent.player.openInventory as? AnvilView)?.renameText ?: ""
-        return onClick(clickEvent, text)
+        val anvilView = clickEvent.player.openInventory as AnvilView
+        val renameText = anvilView.renameText ?: ""
+        return onClick(clickEvent, InputValidator(renameText) {
+            this.isValidInput(clickEvent.player, it)
+        })
     }
-    protected open fun onClick(clickEvent: PluginGUIClick, inputString: String): Boolean {
+    protected open fun onClick(clickEvent: PluginGUIClick, input: InputValidator<String>): Boolean {
         clickEvent.cancelEvent()
         return false
     }
