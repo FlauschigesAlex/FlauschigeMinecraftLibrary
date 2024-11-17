@@ -2,11 +2,10 @@
 
 package at.flauschigesalex.minecraftLibrary.translation
 
+import at.flauschigesalex.defaultLibrary.any.InputValidator
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.AnvilGUI
 import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
-import at.flauschigesalex.defaultLibrary.translation.TranslationValidator
-import at.flauschigesalex.defaultLibrary.utils.InputValidator
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
 import org.bukkit.entity.Player
@@ -26,7 +25,7 @@ abstract class TranslatedAnvilGUI protected constructor(
 ): AnvilGUI(autoUpdateTickDelay) {
 
     init {
-        TranslationValidator.validateKey(translationKey)
+        TranslatedLocale.validateKey(translationKey)
     }
 
     override fun anvilView(player: Player, view: AnvilView, inventory: AnvilInventory) {
@@ -61,9 +60,9 @@ abstract class TranslatedAnvilGUI protected constructor(
 
         Task.createAsyncTask {
             try {
-                this.loadGUI(player, inventory, InputValidator(view.renameText ?: "") {
+                this.loadGUI(player, inventory, InputValidator(view.renameText ?: "", {
                     this.isValidInput(player, it)
-                })
+                }))
             } catch (ignore: IllegalStateException) {
             }
 

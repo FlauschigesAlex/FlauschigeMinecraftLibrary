@@ -1,7 +1,7 @@
 package at.flauschigesalex.minecraftLibrary
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
-import at.flauschigesalex.defaultLibrary.reflections.Reflector
+import at.flauschigesalex.defaultLibrary.any.Reflector
 import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.minecraftLibrary.bukkit.BukkitException
 import at.flauschigesalex.minecraftLibrary.bukkit.PluginCommand

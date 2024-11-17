@@ -4,7 +4,6 @@ package at.flauschigesalex.minecraftLibrary.translation
 
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.defaultLibrary.translation.TranslationException
-import at.flauschigesalex.defaultLibrary.translation.TranslationValidator
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.ItemBuilder
@@ -55,8 +54,8 @@ class TranslatedItem(key: String, material: Material) {
     init {
         var translationKey = key
         translationKey = "$translationKey.item"
-        val response = TranslationValidator.validateKey(translationKey)
-        this.translationKey = response.translationKey
+        val response = TranslatedLocale.validateKey(translationKey)
+        this.translationKey = response.input
 
         if (!material.isItem) throw TranslationException("Material $material cannot be displayed in a GUI.")
         this.material = material

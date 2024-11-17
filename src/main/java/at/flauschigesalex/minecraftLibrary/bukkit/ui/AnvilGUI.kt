@@ -1,8 +1,8 @@
 @file:Suppress("DeprecatedCallableAddReplaceWith", "UnstableApiUsage", "unused", "MemberVisibilityCanBePrivate", "DEPRECATION")
 package at.flauschigesalex.minecraftLibrary.bukkit.ui
 
+import at.flauschigesalex.defaultLibrary.any.InputValidator
 import at.flauschigesalex.defaultLibrary.task.Task
-import at.flauschigesalex.defaultLibrary.utils.InputValidator
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
 import at.flauschigesalex.minecraftLibrary.bukkit.PluginListener
@@ -92,9 +92,9 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
     final override fun onClick(clickEvent: PluginGUIClick): Boolean {
         val anvilView = clickEvent.player.openInventory as AnvilView
         val renameText = anvilView.renameText ?: ""
-        return onClick(clickEvent, InputValidator(renameText) {
+        return onClick(clickEvent, InputValidator(renameText, {
             this.isValidInput(clickEvent.player, it)
-        })
+        }))
     }
     protected open fun onClick(clickEvent: PluginGUIClick, input: InputValidator<String>): Boolean {
         clickEvent.cancelEvent()
@@ -109,9 +109,9 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     final override fun loadGUI(player: Player, inventory: Inventory) {
         val anvilView = player.openInventory as AnvilView
-        this.loadGUI(player, inventory as AnvilInventory, InputValidator(anvilView.renameText ?: "") {
+        this.loadGUI(player, inventory as AnvilInventory, InputValidator(anvilView.renameText ?: "", {
             this.isValidInput(player, it)
-        })
+        }))
     }
     protected open fun loadGUI(player: Player, inventory: AnvilInventory, input: InputValidator<String>) {
         inventory.firstItem = defaultInputItem
@@ -121,11 +121,10 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
     final override fun loadLiveGUI(player: Player, inventory: Inventory) {
         try {
             val anvilView = player.openInventory as AnvilView
-            this.loadLiveGUI(player, inventory as AnvilInventory, InputValidator(anvilView.renameText ?: "") {
+            this.loadLiveGUI(player, inventory as AnvilInventory, InputValidator(anvilView.renameText ?: "", {
                 this.isValidInput(player, it)
-            })
-        } catch (ignore: Exception) {
-        }
+            }))
+        } catch (ignore: Exception) {}
     }
     protected open fun loadLiveGUI(player: Player, inventory: AnvilInventory, input: InputValidator<String>) {
     }
@@ -159,11 +158,10 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
         if (view !is AnvilView) return false
 
         val inventory = view.topInventory
-        if (inventory !is AnvilInventory) return false
 
-        this.loadGUI(player, inventory, InputValidator(view.renameText ?: "") {
+        this.loadGUI(player, inventory, InputValidator(view.renameText ?: "", {
             this.isValidInput(player, it)
-        })
+        }))
         return true
     }
 
@@ -196,9 +194,9 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
             return
 
         this.anvilView(player, view, inventory)
-        this.loadGUI(player, inventory, InputValidator(view.renameText ?: "") {
+        this.loadGUI(player, inventory, InputValidator(view.renameText ?: "", {
             this.isValidInput(player, it)
-        })
+        }))
 
         val firstItem = inventory.firstItem
         if (firstItem != null) {
@@ -260,9 +258,9 @@ class AnvilListener private constructor(): PluginListener() {
             if (anvilTypingControllers[player] != randomId || player.getOpenGUI() != gui)
                 return@createAsyncTask
 
-            val finishResult = gui.onTypingFinish(player, inventory, InputValidator(renameText) {
+            val finishResult = gui.onTypingFinish(player, inventory, InputValidator(renameText, {
                 gui.isValidInput(player, it)
-            }) ?: return@createAsyncTask
+            })) ?: return@createAsyncTask
 
             if (invalidInput != null)
                 return@createAsyncTask

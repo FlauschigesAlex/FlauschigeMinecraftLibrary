@@ -3,7 +3,7 @@
 package at.flauschigesalex.minecraftLibrary.translation
 
 import at.flauschigesalex.defaultLibrary.task.Task
-import at.flauschigesalex.defaultLibrary.translation.TranslationValidator
+import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.PluginGUI
@@ -27,7 +27,7 @@ abstract class TranslatedGUI protected constructor(
         get() = super.title
 
     init {
-        TranslationValidator.validateKey(translationKey)
+        TranslatedLocale.validateKey(translationKey)
     }
 
     override fun createGUI(player: Player): Inventory {
@@ -49,6 +49,7 @@ abstract class TranslatedGUI protected constructor(
         return false
     }
 
+    @Suppress("DEPRECATION")
     override fun open(player: Player) {
         if (player.getOpenGUI() == this) {
             this.reload(player)
