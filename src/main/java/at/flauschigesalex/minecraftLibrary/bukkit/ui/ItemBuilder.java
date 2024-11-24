@@ -25,7 +25,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-import static at.flauschigesalex.minecraftLibrary.bukkit.ComponentManager.*;
+import static at.flauschigesalex.minecraftLibrary.bukkit.utils.ComponentManager.spliterator;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 @SuppressWarnings({"unused", "UnusedReturnValue"})

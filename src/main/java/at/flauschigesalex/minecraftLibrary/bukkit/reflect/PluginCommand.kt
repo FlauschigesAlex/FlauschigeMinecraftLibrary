@@ -1,6 +1,6 @@
 @file:Suppress("DeprecatedCallableAddReplaceWith", "MemberVisibilityCanBePrivate", "UNUSED_PARAMETER", "CanBeParameter")
 
-package at.flauschigesalex.minecraftLibrary.bukkit
+package at.flauschigesalex.minecraftLibrary.bukkit.reflect
 
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import org.bukkit.Bukkit
@@ -12,10 +12,11 @@ import org.bukkit.entity.Player
 import org.jetbrains.annotations.Range
 import org.jetbrains.annotations.Unmodifiable
 import java.util.*
+import kotlin.Throws
 
 @Suppress("unused", "DEPRECATION")
 abstract class PluginCommand protected constructor(val command: String, description: String, usage: String, aliases: ArrayList<String?>)
-    : Command(command, description, usage, aliases) {
+    : Command(command, description, usage, aliases), BukkitReflect {
 
     var pluginPrefix: String
         private set

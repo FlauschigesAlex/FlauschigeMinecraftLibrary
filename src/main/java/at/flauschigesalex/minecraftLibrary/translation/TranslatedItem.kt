@@ -13,7 +13,7 @@ import org.bukkit.Material
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import java.util.UUID
+import java.util.*
 import java.util.function.Consumer
 
 fun ItemStack.isTranslated(function: (PersistentData) -> Unit = {}): Boolean {
@@ -35,11 +35,11 @@ class TranslatedItem(key: String, material: Material) {
             val displayKeys = arrayOf(parent.translationKey + ".displayName",
                 parent.translationKey + ".displayLore")
 
-            if (locale.has(displayKeys[0]))
+            if (locale.contains(displayKeys[0]))
                 parent.builder.setDisplayName(handler.createComponent(displayKeys[0],
                     TranslationHandler.ModifyComponent.SQUASH, parent.replacements))
 
-            if (locale.has(displayKeys[1]))
+            if (locale.contains(displayKeys[1]))
                 parent.builder.setDisplayLore(handler.createComponentList(displayKeys[1], parent.replacements))
 
             parent.builder.addPersistentData("translationKey", parent.translationKey)

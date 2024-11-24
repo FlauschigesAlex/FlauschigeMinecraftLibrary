@@ -1,4 +1,4 @@
-package at.flauschigesalex.minecraftLibrary.bukkit;
+package at.flauschigesalex.minecraftLibrary.bukkit.utils;
 
 import at.flauschigesalex.defaultLibrary.utils.LibraryException;
 

@@ -4,12 +4,12 @@ package at.flauschigesalex.minecraftLibrary.bukkit.ui
 import at.flauschigesalex.defaultLibrary.any.InputValidator
 import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
+import at.flauschigesalex.minecraftLibrary.bukkit.Paper
+import at.flauschigesalex.minecraftLibrary.bukkit.Paper.char
+import at.flauschigesalex.minecraftLibrary.bukkit.Paper.name
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
-import at.flauschigesalex.minecraftLibrary.bukkit.PluginListener
+import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginListener
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.PluginGUI.Companion.getOpenGUI
-import at.flauschigesalex.minecraftLibrary.paper.Paper
-import at.flauschigesalex.minecraftLibrary.paper.Paper.char
-import at.flauschigesalex.minecraftLibrary.paper.Paper.name
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
@@ -22,10 +22,8 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.view.AnvilView
 import org.jetbrains.annotations.Range
-import java.lang.Exception
+import java.time.Duration
 import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.collections.HashMap
 
 private val anvilTypingControllers = HashMap<Player, UUID>()
 
@@ -267,6 +265,6 @@ class AnvilListener private constructor(): PluginListener() {
 
             inventory.result = finishResult
 
-        }.executeDelayed(TimeUnit.MILLISECONDS, gui.finishTypingMS.toLong())
+        }.executeDelayed(Duration.ofMillis(gui.finishTypingMS.toLong()))
     }
 }

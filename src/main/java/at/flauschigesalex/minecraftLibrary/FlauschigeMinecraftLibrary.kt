@@ -1,17 +1,24 @@
 package at.flauschigesalex.minecraftLibrary
 
 import at.flauschigesalex.defaultLibrary.FlauschigeLibrary
+import at.flauschigesalex.defaultLibrary.any.CacheableMojangProfile
+import at.flauschigesalex.defaultLibrary.any.MojangAPI
+import at.flauschigesalex.defaultLibrary.any.MojangProfile
 import at.flauschigesalex.defaultLibrary.any.Reflector
+import at.flauschigesalex.defaultLibrary.supertypes
 import at.flauschigesalex.defaultLibrary.task.Task
-import at.flauschigesalex.minecraftLibrary.bukkit.BukkitException
-import at.flauschigesalex.minecraftLibrary.bukkit.PluginCommand
-import at.flauschigesalex.minecraftLibrary.bukkit.PluginListener
+import at.flauschigesalex.defaultLibrary.task.TaskDelay
+import at.flauschigesalex.defaultLibrary.task.TaskDelayType
+import at.flauschigesalex.minecraftLibrary.bukkit.reflect.BukkitReflect
+import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginCommand
+import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginListener
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.PluginGUI
+import at.flauschigesalex.minecraftLibrary.bukkit.utils.BukkitException
 import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import java.lang.reflect.Modifier
-import java.util.concurrent.TimeUnit
+import java.time.Duration
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
@@ -50,57 +57,63 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
     private fun setPlugin(javaPlugin: JavaPlugin): FlauschigeMinecraftLibrary {
         javaPluginInstance = javaPlugin
 
-        for (commandClass in Reflector.reflect().getSubTypes(PluginCommand::class.java)) {
-            try {
-                if (Modifier.isAbstract(commandClass.modifiers))
-                    continue
+        MojangAPI.addNameLookup(MojangAPI.LookupCall.BEFORE) { uuid ->
+            Bukkit.getPlayer(uuid)?.run { return@addNameLookup this.let {
+                CacheableMojangProfile(MojangProfile(it.name, it.uniqueId))
+            } }
+        }
+        MojangAPI.addUuidLookup(MojangAPI.LookupCall.BEFORE) { name ->
+            Bukkit.getPlayerExact(name)?.run { return@addUuidLookup this.let {
+                CacheableMojangProfile(MojangProfile(it.name, it.uniqueId))
+            } }
+        }
 
-                val constructor = commandClass.getDeclaredConstructor()
+        Reflector.reflect().getSubTypes(BukkitReflect::class.java).filter {
+            !Modifier.isAbstract(it.modifiers)
+        }.forEach {
+            try {
+                val supertypes = it.supertypes()
+
+                val constructor = it.getDeclaredConstructor()
                 constructor.isAccessible = true
 
-                val command = constructor.newInstance() as PluginCommand
+                if (supertypes.contains(PluginCommand::class.java)) {
+                    val command = constructor.newInstance() as PluginCommand
 
-                Bukkit.getCommandMap().register(command.name, command.pluginPrefix, command)
+                    Bukkit.getCommandMap().register(command.name, command.pluginPrefix, command)
+
+                } else if (supertypes.contains(PluginListener::class.java)) {
+                    val listener = constructor.newInstance() as PluginListener
+                    val plugin = javaPluginInstance ?: throw BukkitException.bukkitNotFoundException
+
+                    Bukkit.getPluginManager().registerEvents(listener, plugin)
+
+                } else println("Useless reflection found for ${BukkitReflect::class.java.simpleName}: ${it.simpleName}")
+
             } catch (fail: Exception) {
                 fail.printStackTrace()
             }
         }
 
-        for (listenerClass in Reflector.reflect().getSubTypes(PluginListener::class.java)) {
-            try {
-                if (Modifier.isAbstract(listenerClass.modifiers))
-                    continue
-
-                val constructor = listenerClass.getDeclaredConstructor()
-                constructor.isAccessible = true
-
-                val listener = constructor.newInstance() as PluginListener
-                val plugin = javaPluginInstance ?: break
-
-                Bukkit.getPluginManager().registerEvents(listener, plugin)
-            } catch (fail: Exception) {
-                fail.printStackTrace()
-            }
-        }
-
-        Task.createAsyncTask { optional ->
+        Task.createAsyncTask {
             javaPluginInstance?.name?.let { Bukkit.getPluginManager().getPlugin(it) } ?: return@createAsyncTask
 
-            optional.ifPresent { it.stop() }
             pluginShutdownHooks.forEach { it.invoke() }
+            pluginShutdownHooks.clear()
+            it?.stopTask()
 
-        }.repeatDelayed(TimeUnit.MILLISECONDS, 25)
+        }.repeatDelayed(TaskDelay(Duration.ofMillis(25), TaskDelayType.ALWAYS))
 
         @Suppress("DEPRECATION")
         this.addPluginShutdownHook {
-            PluginGUI.controllers.forEach { it.stop() }
+            PluginGUI.controllers.forEach { it.stopTask() }
         }
 
         return this
     }
 
     @Deprecated("Method should not be used outside recommended scope.")
-    fun addPluginShutdownHook(function: () -> Unit): FlauschigeMinecraftLibrary {
+    internal fun addPluginShutdownHook(function: () -> Unit): FlauschigeMinecraftLibrary {
         pluginShutdownHooks.add(function)
         return this
     }

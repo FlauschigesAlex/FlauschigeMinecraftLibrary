@@ -1,4 +1,4 @@
-package at.flauschigesalex.minecraftLibrary.bukkit
+package at.flauschigesalex.minecraftLibrary.bukkit.utils
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent

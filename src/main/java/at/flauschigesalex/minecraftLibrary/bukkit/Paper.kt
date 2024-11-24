@@ -1,11 +1,10 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "UNCHECKED_CAST", "unused", "DEPRECATION")
-
-package at.flauschigesalex.minecraftLibrary.paper
+package at.flauschigesalex.minecraftLibrary.bukkit
 
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.ChatColor
 
+@Suppress("UNCHECKED_CAST", "DEPRECATION")
 object Paper {
 
     fun getNamedTextColorValues(): List<NamedTextColor> {

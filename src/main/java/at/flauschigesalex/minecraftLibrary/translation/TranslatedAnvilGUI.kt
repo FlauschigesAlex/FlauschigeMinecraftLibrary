@@ -3,16 +3,15 @@
 package at.flauschigesalex.minecraftLibrary.translation
 
 import at.flauschigesalex.defaultLibrary.any.InputValidator
-import at.flauschigesalex.minecraftLibrary.bukkit.ui.AnvilGUI
 import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
+import at.flauschigesalex.minecraftLibrary.bukkit.ui.AnvilGUI
 import org.bukkit.entity.Player
 import org.bukkit.inventory.AnvilInventory
 import org.bukkit.inventory.view.AnvilView
 import org.jetbrains.annotations.Range
-import java.lang.IllegalStateException
 
 /**
  * @since 1.6.0

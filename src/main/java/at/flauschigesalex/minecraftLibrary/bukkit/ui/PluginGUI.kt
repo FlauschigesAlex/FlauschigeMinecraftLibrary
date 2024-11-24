@@ -2,11 +2,13 @@
 
 package at.flauschigesalex.minecraftLibrary.bukkit.ui
 
+import at.flauschigesalex.defaultLibrary.task.ConsumableTaskController
 import at.flauschigesalex.defaultLibrary.task.Task
-import at.flauschigesalex.defaultLibrary.task.Task.Controller
-import at.flauschigesalex.minecraftLibrary.bukkit.BukkitException
-import at.flauschigesalex.minecraftLibrary.bukkit.PluginListener
+import at.flauschigesalex.defaultLibrary.task.TaskDelay
+import at.flauschigesalex.defaultLibrary.task.TaskDelayType
+import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginListener
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.PluginGUI.Companion.getOpenGUI
+import at.flauschigesalex.minecraftLibrary.bukkit.utils.BukkitException
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.HumanEntity
@@ -18,8 +20,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.jetbrains.annotations.Range
+import java.time.Duration
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
 /**
@@ -43,7 +45,7 @@ abstract class PluginGUI protected constructor(
             return openGUIs[this.uniqueId]
         }
 
-        val controllers = HashSet<Controller>()
+        val controllers = HashSet<ConsumableTaskController>()
     }
 
     init {
@@ -81,16 +83,13 @@ abstract class PluginGUI protected constructor(
         if (autoUpdateTickDelay <= 0)
             return
 
-        Task.createAsyncTask { optional ->
-
-            optional.ifPresent {
-                controllers.add(it)
-            }
+        Task.createAsyncTask {
+            it?.run { controllers.add(this) }
 
             if (!player.isOnline || player.getOpenGUI() != this) {
-                optional.ifPresent {
+                it?.run {
                     controllers.remove(it)
-                    it.stop()
+                    it.stopTask()
                 }
 
                 openGUIs.remove(player.uniqueId, this)
@@ -98,8 +97,7 @@ abstract class PluginGUI protected constructor(
             }
 
             this.loadLiveGUI(player, inventory)
-
-        }.repeatDelayed(TimeUnit.MILLISECONDS, max(50 * autoUpdateTickDelay, 1).toLong())
+        }.repeatDelayed(TaskDelay(Duration.ofMillis(50L * max(autoUpdateTickDelay, 1)), TaskDelayType.ALWAYS))
     }
 
     open fun reloadForAllViewers(loadBackground: Boolean = false) {
