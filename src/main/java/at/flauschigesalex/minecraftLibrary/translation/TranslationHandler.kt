@@ -23,7 +23,7 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
 
     constructor(sender: CommandSender) : this(sender,
         if (sender is Player) sender.locale()
-        else TranslatedLocale.fallbackLocale().locale)
+        else TranslatedLocale.fallbackLocale.locale)
 
     constructor(locale: Locale) : this(null, locale)
     constructor(locale: TranslatedLocale) : this(null, locale)
@@ -82,7 +82,7 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
 
     enum class ModifyComponent(func: Function<ArrayList<String>, Component>) {
         BREAK(Function { list: ArrayList<String> ->
-            val builder = StringBuilder(list.first)
+            val builder = StringBuilder(list.first())
             list.removeFirst()
 
             for (append in list)
@@ -91,7 +91,7 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
             MiniMessage.miniMessage().deserialize(builder.toString())
         }),
         SQUASH(Function { list: ArrayList<String> ->
-            val builder = StringBuilder(list.first)
+            val builder = StringBuilder(list.first())
             list.removeFirst()
 
             for (append in list)
@@ -99,7 +99,7 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
 
             MiniMessage.miniMessage().deserialize(builder.toString())
         }),
-        SUPPRESS(Function { strings: ArrayList<String> -> MiniMessage.miniMessage().deserialize(strings.first) }),
+        SUPPRESS(Function { strings: ArrayList<String> -> MiniMessage.miniMessage().deserialize(strings.first()) }),
         ;
 
         val function: Function<ArrayList<String>, Component> = func
