@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Range
 /**
  * @since 1.6.0
  */
+@ExperimentalStdlibApi
 abstract class TranslatedAnvilGUI protected constructor(
     val translationKey: String,
     protected val titleCreator: Pair<(Player, Map<String, Any>) -> String, Map<String, Any>> =

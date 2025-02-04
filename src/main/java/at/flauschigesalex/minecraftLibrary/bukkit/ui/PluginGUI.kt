@@ -141,7 +141,7 @@ abstract class PluginGUI protected constructor(
     }
 }
 
-class PluginGUIListener private constructor(): PluginListener() {
+private class PluginGUIListener private constructor(): PluginListener() {
 
     @EventHandler
     private fun inventoryClick(event: InventoryClickEvent) {
@@ -169,6 +169,15 @@ class PluginGUIListener private constructor(): PluginListener() {
 
     @EventHandler
     private fun inventoryClose(event: InventoryCloseEvent) {
+        val player = event.player as Player
+        val gui = player.getOpenGUI() ?: return
+
+        gui.onClose(player, player.openInventory.topInventory)
+        PluginGUI.openGUIs.remove(player.uniqueId, gui)
+    }
+
+    @EventHandler
+    private fun onQuit(event: InventoryCloseEvent) {
         val player = event.player as Player
         val gui = player.getOpenGUI() ?: return
 

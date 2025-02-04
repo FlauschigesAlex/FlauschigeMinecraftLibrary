@@ -1,4 +1,6 @@
 @file:Suppress("DeprecatedCallableAddReplaceWith", "UnstableApiUsage", "unused", "MemberVisibilityCanBePrivate", "DEPRECATION")
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package at.flauschigesalex.minecraftLibrary.bukkit.ui
 
 import at.flauschigesalex.defaultLibrary.any.InputValidator
@@ -30,6 +32,8 @@ private val anvilTypingControllers = HashMap<Player, UUID>()
 /**
  * @since 1.6.0
  */
+
+@ExperimentalStdlibApi
 abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0,
                         val legacyTitle: String = " ",
                         val finishTypingMS: Int = -1
@@ -213,7 +217,7 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
 /**
  * @since 1.6.0
  */
-class AnvilListener private constructor(): PluginListener() {
+private class AnvilListener private constructor(): PluginListener() {
 
     @EventHandler
     private fun onTyping(event: PrepareAnvilEvent) {

@@ -54,39 +54,7 @@ public class ItemBuilder implements Cloneable {
     }
 
     public ItemBuilder(final @NotNull Material material) {
-        this(new ItemStack(material), false);
-    }
-
-    public ItemBuilder(final @NotNull ItemStack itemStack, final boolean copyPersistentData) {
-        this.material = itemStack.getType();
-
-        if (!itemStack.hasItemMeta())
-            return;
-
-        assert (itemStack.getItemMeta() != null);
-        for (final ItemFlag value : ItemFlag.values()) {
-            if (!itemStack.getItemMeta().hasItemFlag(value))
-                continue;
-
-            flags.add(value);
-        }
-
-        container = copyPersistentData ? itemStack.getItemMeta().getPersistentDataContainer() : null;
-
-        if (itemStack.getItemMeta().hasDisplayName())
-            this.displayName = itemStack.displayName();
-
-        if (itemStack.getItemMeta().hasLore())
-            this.displayLore.addAll(Objects.requireNonNull(itemStack.lore()));
-
-        if (itemStack.getItemMeta().isUnbreakable())
-            this.unbreakable = itemStack.getItemMeta().isUnbreakable();
-
-        if (itemStack.getItemMeta().hasEnchants())
-            enchants = itemStack.getItemMeta().getEnchants();
-
-        if (itemStack.getAmount() > 1)
-            this.amount = itemStack.getAmount();
+        this.material = material;
     }
 
     public ItemBuilder addFlags(final @NotNull ItemFlag... flags) {

@@ -14,6 +14,10 @@ fun TranslatedLocale.Companion.of(player: Player): TranslatedLocale {
     return this.of(player.locale())
 }
 
+fun CommandSender.sendTranslated(translationKey: String, replacements: Map<String, Any>) {
+    TranslationHandler(this).sendMessage(translationKey, replacements)
+}
+
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class TranslationHandler private constructor(private val sender: CommandSender?, private val locale: TranslatedLocale) {
 

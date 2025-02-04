@@ -70,8 +70,8 @@ abstract class PluginCommand protected constructor(val command: String, descript
 
     protected abstract fun executeCommand(sender: CommandSender, fullCommand: String, args: Array<String>)
 
-    protected open fun tabCompletes(sender: CommandSender?): Set<TabComplete> {
-        return TabComplete.onlinePlayers(if (sender is Player) sender else null)
+    protected open fun tabCompletes(sender: CommandSender?, args: Array<String>): Set<TabComplete> {
+        return TabComplete.onlinePlayers(sender as? Player)
     }
 
     @Deprecated("") @Throws(IllegalArgumentException::class)
@@ -85,22 +85,19 @@ abstract class PluginCommand protected constructor(val command: String, descript
 
     @Deprecated("") @Throws(IllegalArgumentException::class)
     final override fun tabComplete(sender: CommandSender, alias: String, args: Array<String>, location: Location?): List<String> {
-        return tabCompletes(sender).stream()
+        val argSize = args.size -1
+        return tabCompletes(sender, args).stream()
             .filter { complete: TabComplete ->
                 if (complete.arg == null)
                     return@filter true
 
-                complete.arg == args.size - 1
+                complete.arg == argSize
             }
             .filter { complete: TabComplete ->
-                val arg = args.size - 1
-                if (arg < 0)
+                if (args[argSize].isBlank())
                     return@filter true
 
-                if (args[arg].isBlank())
-                    return@filter true
-
-                complete.completable.lowercase(Locale.getDefault()).startsWith(args[arg].lowercase(Locale.getDefault()))
+                complete.completable.lowercase(Locale.getDefault()).startsWith(args[argSize].lowercase(Locale.getDefault()))
             }
             .filter { complete: TabComplete ->
                 if (complete.location == null || complete.location.world == null)

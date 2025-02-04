@@ -21,25 +21,27 @@ import java.lang.reflect.Modifier
 import java.time.Duration
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
-
+class FlauschigeMinecraftLibrary private constructor(packageCollection: Collection<String>) : FlauschigeLibrary() {
+    
     companion object {
         private var flauschigeMinecraftLibrary: FlauschigeMinecraftLibrary? = null
 
         private var javaPluginInstance: JavaPlugin? = null
-
-        private val library = null
-
+        
         @JvmStatic
         fun getLibrary(): FlauschigeMinecraftLibrary {
             return getLibrary(javaPluginInstance!!)
         }
+        
+        @JvmStatic
+        fun getLibrary(plugin: JavaPlugin = javaPluginInstance!!, vararg packages: String): FlauschigeMinecraftLibrary {
+            return this.getLibrary(plugin, packages.toList())
+        }
 
         @JvmStatic
-        fun getLibrary(plugin: JavaPlugin = javaPluginInstance!!): FlauschigeMinecraftLibrary {
-
+        fun getLibrary(plugin: JavaPlugin = javaPluginInstance!!, packages: Collection<String> = listOf()): FlauschigeMinecraftLibrary {
             if (flauschigeMinecraftLibrary == null)
-                flauschigeMinecraftLibrary = FlauschigeMinecraftLibrary()
+                flauschigeMinecraftLibrary = FlauschigeMinecraftLibrary(packages)
 
             if (javaPluginInstance == null)
                 flauschigeMinecraftLibrary!!.setPlugin(plugin)
@@ -47,12 +49,18 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
             return flauschigeMinecraftLibrary!!
         }
     }
+    
+    private var packages = ArrayList<String>().apply {
+        this.addAll(packageCollection)
+        this.add("at.flauschigesalex")
+    }
 
     val plugin: Plugin get() {
         return javaPluginInstance ?: throw BukkitException.bukkitNotFoundException
     }
 
     private val pluginShutdownHooks = HashSet<() -> Unit>()
+    private val statement = Reflector.reflect(packages)
 
     private fun setPlugin(javaPlugin: JavaPlugin): FlauschigeMinecraftLibrary {
         javaPluginInstance = javaPlugin
@@ -68,7 +76,7 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
             } }
         }
 
-        Reflector.reflect().getSubTypes(BukkitReflect::class.java).filter {
+        statement.getSubTypes(BukkitReflect::class.java).filter {
             !Modifier.isAbstract(it.modifiers)
         }.forEach {
             try {
@@ -88,7 +96,7 @@ class FlauschigeMinecraftLibrary private constructor() : FlauschigeLibrary() {
 
                     Bukkit.getPluginManager().registerEvents(listener, plugin)
 
-                } else println("Useless reflection found for ${BukkitReflect::class.java.simpleName}: ${it.simpleName}")
+                } else println("Useless reflection found for ${BukkitReflect::class.java.simpleName}: ${it.name}")
 
             } catch (fail: Exception) {
                 fail.printStackTrace()
