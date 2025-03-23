@@ -14,6 +14,7 @@ abstract class PluginCommand protected constructor(val command: String, descript
     var pluginPrefix: String
         private set
 
+    protected constructor(command: String) : this(command, "", "/$command")
     protected constructor(command: String, description: String = "") : this(command, "", "/$command")
 
     protected constructor(command: String, description: String, usage: String) : this(

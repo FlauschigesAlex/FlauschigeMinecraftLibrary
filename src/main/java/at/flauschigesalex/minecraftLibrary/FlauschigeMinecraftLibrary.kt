@@ -52,7 +52,7 @@ class FlauschigeMinecraftLibrary private constructor(packageCollection: Collecti
     
     private var packages = ArrayList<String>().apply {
         this.addAll(packageCollection)
-        this.add("at.flauschigesalex")
+        this.add(FlauschigeMinecraftLibrary::class.java.packageName)
     }
 
     val plugin: Plugin get() {

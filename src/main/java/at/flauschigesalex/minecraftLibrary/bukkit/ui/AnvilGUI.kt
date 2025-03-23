@@ -54,7 +54,8 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
         }
 
         val defaultInputItem: ItemStack =
-            ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS_PANE).setDisplayName("<white>").item()
+            ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS_PANE)
+                .setRichName("<white>").item()
     }
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)

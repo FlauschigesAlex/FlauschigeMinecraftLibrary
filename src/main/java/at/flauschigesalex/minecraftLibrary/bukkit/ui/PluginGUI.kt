@@ -63,8 +63,10 @@ abstract class PluginGUI protected constructor(
         return Bukkit.createInventory(player, size, titleConstructor.invoke(player))
     }
     protected open fun designGUI(player: Player, inventory: Inventory) {
-        val black = ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName("§§").item()
-        val gray = ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setDisplayName("§§").item()
+        val black = ItemBuilder(Material.BLACK_STAINED_GLASS_PANE)
+            .setRichName("§§").item()
+        val gray = ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
+            .setRichName("§§").item()
 
         for (slot in 0 until inventory.size) {
             if (slot < 9 || slot > inventory.size -10) inventory[slot] = black
