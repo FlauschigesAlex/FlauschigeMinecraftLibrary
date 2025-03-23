@@ -25,6 +25,10 @@ fun ItemStack.isTranslated(function: (PersistentData) -> Unit = {}): Boolean {
     return true
 }
 
+fun ItemStack.hasTranslationKey(key: String): Boolean {
+    return PersistentData(this.itemMeta, FlauschigeMinecraftLibrary.getLibrary().plugin)["translationKey"]?.equals("${key}.item") ?: false
+}
+
 class TranslatedItem(key: String, material: Material) {
 
     companion object {
@@ -52,8 +56,7 @@ class TranslatedItem(key: String, material: Material) {
     constructor(key: String) : this(key, Material.PAPER)
 
     init {
-        var translationKey = key
-        translationKey = "$translationKey.item"
+        val translationKey = "${key}.item"
         val response = TranslatedLocale.validateKey(translationKey)
         this.translationKey = response.input
 

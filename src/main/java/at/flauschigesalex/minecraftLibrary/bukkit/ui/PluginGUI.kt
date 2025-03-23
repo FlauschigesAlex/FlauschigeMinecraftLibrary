@@ -6,17 +6,19 @@ import at.flauschigesalex.defaultLibrary.task.ConsumableTaskController
 import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.defaultLibrary.task.TaskDelay
 import at.flauschigesalex.defaultLibrary.task.TaskDelayType
+import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginListener
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.PluginGUI.Companion.getOpenGUI
-import at.flauschigesalex.minecraftLibrary.bukkit.utils.BukkitException
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.entity.HumanEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.jetbrains.annotations.Range
@@ -24,17 +26,26 @@ import java.time.Duration
 import java.util.*
 import kotlin.math.max
 
+operator fun Inventory.get(index: Int): ItemStack? {
+    return this.getItem(index)
+}
+operator fun Inventory.set(index: Int, item: ItemStack?) {
+    this.setItem(index, item)
+}
+
 /**
  * @since v1.5.0
  */
 abstract class PluginGUI protected constructor(
-    open val size: @Range(from = 9, to = 54) Int,
-    protected val autoUpdateTickDelay: @Range(
-        from = 1,
-        to = Long.MAX_VALUE
-    ) Int = 0,
-    protected open val title: Component = Component.text(" ")
+    open val size: Int,
+    protected val autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0,
+    protected val titleConstructor: (Player) -> Component 
 ) {
+    
+    constructor(
+        size: Int,
+        autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0,
+        title: Component = Component.text(" ")) : this(size, autoUpdateTickDelay, { _ -> title})
 
     companion object {
         @Deprecated("")
@@ -48,22 +59,18 @@ abstract class PluginGUI protected constructor(
         val controllers = HashSet<ConsumableTaskController>()
     }
 
-    init {
-        this.apply {
-            if (size < 9)
-            throw BukkitException("Inventory size of ${this::class.java.simpleName} must not be smaller than 9.")
-        if (size > 54)
-            throw BukkitException("Inventory size of ${this::class.java.simpleName} must not be larger than 54.")
+    protected open fun createGUI(player: Player): Inventory {
+        return Bukkit.createInventory(player, size, titleConstructor.invoke(player))
+    }
+    protected open fun designGUI(player: Player, inventory: Inventory) {
+        val black = ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName("§§").item()
+        val gray = ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setDisplayName("§§").item()
 
-        if (size % 9 != 0)
-            throw BukkitException("Inventory size of ${this::class.java.simpleName} must be dividable by 9.")
+        for (slot in 0 until inventory.size) {
+            if (slot < 9 || slot > inventory.size -10) inventory[slot] = black
+            else inventory[slot] = gray
         }
     }
-
-    protected open fun createGUI(player: Player): Inventory {
-        return Bukkit.createInventory(player, size, title)
-    }
-    protected open fun designGUI(player: Player, inventory: Inventory) {}
     protected open fun loadGUI(player: Player, inventory: Inventory) {}
     protected open fun loadLiveGUI(player: Player, inventory: Inventory) {
         return loadGUI(player, inventory)
@@ -111,7 +118,7 @@ abstract class PluginGUI protected constructor(
 
         if (loadBackground)
             this.designGUI(player, gui)
-
+        
         this.loadGUI(player, gui)
         return true
     }
@@ -122,17 +129,23 @@ abstract class PluginGUI protected constructor(
             return
         }
 
-        val gui = createGUI(player)
+        player.getOpenGUI()?.onClose(player, player.openInventory.topInventory)
+
+        val inventory = this.createGUI(player)
         openGUIs[player.uniqueId] = this
 
-        this.designGUI(player, gui)
-        this.loadGUI(player, gui)
+        this.designGUI(player, inventory)
+        this.loadGUI(player, inventory)
 
-        player.openInventory(gui)
-        this.onOpen(player, gui)
+        player.openInventory(inventory)
+        this.onOpen(player, inventory)
         if (autoUpdateTickDelay > 0)
-            this.liveInventory(player, gui)
+            this.liveInventory(player, inventory)
     }
+    
+    @OptIn(ExperimentalStdlibApi::class)
+    val isAnvilGUI
+        get() = this is AnvilGUI
 
     val viewers: List<Player> get() {
         return Bukkit.getOnlinePlayers().filter {
@@ -171,17 +184,30 @@ private class PluginGUIListener private constructor(): PluginListener() {
     private fun inventoryClose(event: InventoryCloseEvent) {
         val player = event.player as Player
         val gui = player.getOpenGUI() ?: return
+        
+        val inventory = player.openInventory.topInventory
 
-        gui.onClose(player, player.openInventory.topInventory)
-        PluginGUI.openGUIs.remove(player.uniqueId, gui)
+        if (gui.isAnvilGUI)
+            player.openInventory.topInventory.clear()
+
+        Bukkit.getScheduler().runTaskLater(FlauschigeMinecraftLibrary.getLibrary().plugin, Runnable {
+            player.openInventory.topInventory.location ?: return@Runnable
+
+            PluginGUI.openGUIs.remove(player.uniqueId, gui)
+            gui.onClose(player, inventory)
+        }, 1)
     }
 
     @EventHandler
-    private fun onQuit(event: InventoryCloseEvent) {
-        val player = event.player as Player
+    private fun onQuit(event: PlayerQuitEvent) {
+        val player = event.player
         val gui = player.getOpenGUI() ?: return
 
         gui.onClose(player, player.openInventory.topInventory)
+        
+        if (gui.isAnvilGUI)
+            player.openInventory.topInventory.clear()
+        
         PluginGUI.openGUIs.remove(player.uniqueId, gui)
     }
 }

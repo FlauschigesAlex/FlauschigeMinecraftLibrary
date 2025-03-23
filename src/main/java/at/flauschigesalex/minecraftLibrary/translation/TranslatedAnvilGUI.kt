@@ -47,6 +47,8 @@ abstract class TranslatedAnvilGUI protected constructor(
             return
         }
 
+        player.getOpenGUI()?.onClose(player, player.openInventory.topInventory)
+
         val view = player.openAnvil(null, true)
             ?: return
 

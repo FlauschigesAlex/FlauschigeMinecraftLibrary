@@ -103,6 +103,10 @@ public class ItemBuilder implements Cloneable {
         return this;
     }
 
+    public ItemBuilder setPlainDisplayName(final @NotNull String plainString) {
+        return this.setDisplayName(Component.text(plainString));
+    }
+
     public ItemBuilder setDisplayName(final @NotNull String miniString) {
         return this.setDisplayName(MiniMessage.miniMessage().deserialize(miniString));
     }

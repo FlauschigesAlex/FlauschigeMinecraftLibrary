@@ -115,6 +115,10 @@ class FlauschigeMinecraftLibrary private constructor(packageCollection: Collecti
         @Suppress("DEPRECATION")
         this.addPluginShutdownHook {
             PluginGUI.controllers.forEach { it.stopTask() }
+            
+            Bukkit.getOnlinePlayers().filter { 
+                PluginGUI.openGUIs.containsKey(it.uniqueId)
+            }.forEach { it.closeInventory() }
         }
 
         return this

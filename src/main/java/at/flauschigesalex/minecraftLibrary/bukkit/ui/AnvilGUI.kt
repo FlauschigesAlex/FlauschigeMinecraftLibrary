@@ -4,7 +4,6 @@
 package at.flauschigesalex.minecraftLibrary.bukkit.ui
 
 import at.flauschigesalex.defaultLibrary.any.InputValidator
-import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.Paper
 import at.flauschigesalex.minecraftLibrary.bukkit.Paper.char
@@ -24,8 +23,8 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.view.AnvilView
 import org.jetbrains.annotations.Range
-import java.time.Duration
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 private val anvilTypingControllers = HashMap<Player, UUID>()
 
@@ -36,7 +35,6 @@ private val anvilTypingControllers = HashMap<Player, UUID>()
 @ExperimentalStdlibApi
 abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0,
                         val legacyTitle: String = " ",
-                        val finishTypingMS: Int = -1
 ) : PluginGUI(9, autoUpdateTickDelay, Component.text(legacyTitle)) {
 
     companion object {
@@ -63,17 +61,13 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
     final override val size: Int
         get() = super.size
 
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
-    final override val title: Component
-        get() = super.title
-
     @Deprecated("Unused", level = DeprecationLevel.HIDDEN)
     final override fun createGUI(player: Player): Inventory {
         return super.createGUI(player)
     }
 
     /**
-     * Called before running [AnvilGUI.onTyping] and [AnvilGUI.onTypingFinish] to check if the provided input is valid.
+     * Called before running [AnvilGUI.onTyping] to check if the provided input is valid.
      * @return null if the string is valid, else item to display.
      */
     open fun catchInvalidInput(player: Player, inputString: String): ItemStack? {
@@ -86,17 +80,19 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
     open fun onTyping(player: Player, inventory: AnvilInventory, input: InputValidator<String>): ItemStack? {
         return null
     }
-    open fun onTypingFinish(player: Player, inventory: AnvilInventory, input: InputValidator<String>): ItemStack? {
-        return null
-    }
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     final override fun onClick(clickEvent: PluginGUIClick): Boolean {
         val anvilView = clickEvent.player.openInventory as AnvilView
         val renameText = anvilView.renameText ?: ""
-        return onClick(clickEvent, InputValidator(renameText, {
-            this.isValidInput(clickEvent.player, it)
-        }))
+        
+        val s = CompletableFuture<InputValidator<String>>().completeAsync {
+            InputValidator(renameText, {
+                this.isValidInput(clickEvent.player, it)
+            })
+        }
+        
+        return onClick(clickEvent, s.join())
     }
     protected open fun onClick(clickEvent: PluginGUIClick, input: InputValidator<String>): Boolean {
         clickEvent.cancelEvent()
@@ -105,7 +101,6 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
 
     @Deprecated("Unused", level = DeprecationLevel.HIDDEN)
     final override fun designGUI(player: Player, inventory: Inventory) {
-        super.designGUI(player, inventory)
     }
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
@@ -186,6 +181,8 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
             return
         }
 
+        player.getOpenGUI()?.onClose(player, player.openInventory.topInventory)
+
         val view = player.openAnvil(null, true)
             ?: return
 
@@ -236,39 +233,16 @@ private class AnvilListener private constructor(): PluginListener() {
 
         val renameText = event.view.renameText ?: ""
 
-        val invalidInput = gui.catchInvalidInput(player, renameText)
-        if (invalidInput != null)
-            Task.createAsyncTask { inventory.result = invalidInput }.execute()
-
-        val result = gui.onTyping(player, inventory, InputValidator(renameText, invalidInput == null))
-
-        if (result != null && invalidInput == null)
-            Task.createAsyncTask { inventory.result = result }.execute()
-
-        if (gui.finishTypingMS <= 0)
-            return
-
-        val randomId = UUID.randomUUID()
-        anvilTypingControllers[player] = randomId
-
-        Task.createAsyncTask {
-            if (!player.isOnline) {
-                anvilTypingControllers.remove(player)
-                return@createAsyncTask
-            }
-
-            if (anvilTypingControllers[player] != randomId || player.getOpenGUI() != gui)
-                return@createAsyncTask
-
-            val finishResult = gui.onTypingFinish(player, inventory, InputValidator(renameText, {
-                gui.isValidInput(player, it)
-            })) ?: return@createAsyncTask
-
+        Bukkit.getScheduler().runTaskAsynchronously(FlauschigeMinecraftLibrary.getLibrary().plugin, Runnable {
+            val invalidInput = gui.catchInvalidInput(player, renameText)
+            
             if (invalidInput != null)
-                return@createAsyncTask
+                inventory.result = invalidInput
 
-            inventory.result = finishResult
+            val result = gui.onTyping(player, inventory, InputValidator(renameText, invalidInput == null))
 
-        }.executeDelayed(Duration.ofMillis(gui.finishTypingMS.toLong()))
+            if (result != null && invalidInput == null)
+                inventory.result = result
+        })
     }
 }
