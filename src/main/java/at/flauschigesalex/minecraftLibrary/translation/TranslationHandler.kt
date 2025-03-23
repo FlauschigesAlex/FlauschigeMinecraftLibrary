@@ -1,10 +1,11 @@
 package at.flauschigesalex.minecraftLibrary.translation
 
-import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.defaultLibrary.translation.TranslationException
+import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import java.util.*
@@ -79,9 +80,9 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
 
         val base = if (displayPrefix) prefix ?: Component.empty() else Component.empty()
 
-        Task.createAsyncTask { _ ->
+        Bukkit.getScheduler().runTaskAsynchronously(FlauschigeMinecraftLibrary.getLibrary().plugin) { _ ->
             sender.sendMessage(base.append(this.createComponent(translationKey, replacements = replacements)))
-        }.execute()
+        }
     }
 
     enum class ModifyComponent(func: Function<ArrayList<String>, Component>) {

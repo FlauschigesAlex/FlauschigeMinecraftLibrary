@@ -2,10 +2,6 @@
 
 package at.flauschigesalex.minecraftLibrary.bukkit.ui
 
-import at.flauschigesalex.defaultLibrary.task.ConsumableTaskController
-import at.flauschigesalex.defaultLibrary.task.Task
-import at.flauschigesalex.defaultLibrary.task.TaskDelay
-import at.flauschigesalex.defaultLibrary.task.TaskDelayType
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginListener
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.PluginGUI.Companion.getOpenGUI
@@ -21,8 +17,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
+import org.bukkit.scheduler.BukkitTask
 import org.jetbrains.annotations.Range
-import java.time.Duration
 import java.util.*
 import kotlin.math.max
 
@@ -56,15 +52,17 @@ abstract class PluginGUI protected constructor(
             return openGUIs[this.uniqueId]
         }
 
-        val controllers = HashSet<ConsumableTaskController>()
+        val controllers = HashSet<BukkitTask>()
     }
 
     protected open fun createGUI(player: Player): Inventory {
         return Bukkit.createInventory(player, size, titleConstructor.invoke(player))
     }
     protected open fun designGUI(player: Player, inventory: Inventory) {
-        val black = ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setDisplayName("§§").item()
-        val gray = ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setDisplayName("§§").item()
+        val black = ItemBuilder(Material.BLACK_STAINED_GLASS_PANE)
+            .setHideTooltip(true).item()
+        val gray = ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
+            .setHideTooltip(true).item()
 
         for (slot in 0 until inventory.size) {
             if (slot < 9 || slot > inventory.size -10) inventory[slot] = black
@@ -90,21 +88,21 @@ abstract class PluginGUI protected constructor(
         if (autoUpdateTickDelay <= 0)
             return
 
-        Task.createAsyncTask {
+        Bukkit.getScheduler().runTaskLaterAsynchronously(FlauschigeMinecraftLibrary.getLibrary().plugin, { it ->
             it?.run { controllers.add(this) }
 
             if (!player.isOnline || player.getOpenGUI() != this) {
                 it?.run {
                     controllers.remove(it)
-                    it.stopTask()
+                    it.cancel()
                 }
 
                 openGUIs.remove(player.uniqueId, this)
-                return@createAsyncTask
+                return@runTaskLaterAsynchronously
             }
 
             this.loadLiveGUI(player, inventory)
-        }.repeatDelayed(TaskDelay(Duration.ofMillis(50L * max(autoUpdateTickDelay, 1)), TaskDelayType.ALWAYS))
+        }, max(autoUpdateTickDelay, 1).toLong())
     }
 
     open fun reloadForAllViewers(loadBackground: Boolean = false) {

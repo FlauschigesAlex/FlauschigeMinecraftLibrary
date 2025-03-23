@@ -6,9 +6,6 @@ import at.flauschigesalex.defaultLibrary.any.MojangAPI
 import at.flauschigesalex.defaultLibrary.any.MojangProfile
 import at.flauschigesalex.defaultLibrary.any.Reflector
 import at.flauschigesalex.defaultLibrary.supertypes
-import at.flauschigesalex.defaultLibrary.task.Task
-import at.flauschigesalex.defaultLibrary.task.TaskDelay
-import at.flauschigesalex.defaultLibrary.task.TaskDelayType
 import at.flauschigesalex.minecraftLibrary.bukkit.reflect.BukkitReflect
 import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginCommand
 import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginListener
@@ -18,7 +15,8 @@ import org.bukkit.Bukkit
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import java.lang.reflect.Modifier
-import java.time.Duration
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class FlauschigeMinecraftLibrary private constructor(packageCollection: Collection<String>) : FlauschigeLibrary() {
@@ -52,7 +50,7 @@ class FlauschigeMinecraftLibrary private constructor(packageCollection: Collecti
     
     private var packages = ArrayList<String>().apply {
         this.addAll(packageCollection)
-        this.add("at.flauschigesalex")
+        this.add(FlauschigeMinecraftLibrary::class.java.packageName)
     }
 
     val plugin: Plugin get() {
@@ -103,18 +101,19 @@ class FlauschigeMinecraftLibrary private constructor(packageCollection: Collecti
             }
         }
 
-        Task.createAsyncTask {
-            javaPluginInstance?.name?.let { Bukkit.getPluginManager().getPlugin(it) } ?: return@createAsyncTask
+        val executor = Executors.newScheduledThreadPool(1)
+        executor.scheduleAtFixedRate({
+            javaPluginInstance?.name?.let { Bukkit.getPluginManager().getPlugin(it) } ?: return@scheduleAtFixedRate
 
             pluginShutdownHooks.forEach { it.invoke() }
             pluginShutdownHooks.clear()
-            it?.stopTask()
-
-        }.repeatDelayed(TaskDelay(Duration.ofMillis(25), TaskDelayType.ALWAYS))
+            
+            executor.shutdownNow()
+        }, 0, 50, TimeUnit.MILLISECONDS)
 
         @Suppress("DEPRECATION")
         this.addPluginShutdownHook {
-            PluginGUI.controllers.forEach { it.stopTask() }
+            PluginGUI.controllers.forEach { it.cancel() }
             
             Bukkit.getOnlinePlayers().filter { 
                 PluginGUI.openGUIs.containsKey(it.uniqueId)

@@ -7,13 +7,18 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import java.util.*
 
-@Suppress("unused", "DEPRECATION")
+@Suppress("unused", "DEPRECATION", "RedundantModalityModifier")
 abstract class PluginCommand protected constructor(val command: String, description: String, usage: String, aliases: ArrayList<String?>)
     : Command(command, description, usage, aliases), BukkitReflect {
+        
+        companion object {
+            var defaultCommandPermission: String? = null
+        }
 
     var pluginPrefix: String
         private set
 
+    protected constructor(command: String) : this(command, "", "/$command")
     protected constructor(command: String, description: String = "") : this(command, "", "/$command")
 
     protected constructor(command: String, description: String, usage: String) : this(
@@ -24,6 +29,8 @@ abstract class PluginCommand protected constructor(val command: String, descript
     init {
         val pluginName = FlauschigeMinecraftLibrary.getLibrary().plugin.name
         this.pluginPrefix = pluginName.lowercase(Locale.getDefault())
+        
+        this.permission = this.permission
     }
 
     @Deprecated("", ReplaceWith("this.command")) override fun setName(name: String): Boolean {
@@ -52,6 +59,10 @@ abstract class PluginCommand protected constructor(val command: String, descript
         return super.setPermissionMessage(permissionMessage)
     }
 
+    open override fun getPermission(): String? {
+        return defaultCommandPermission?.replace("%command%", command)
+    }
+    
     override fun setAliases(aliases: List<String>): Command {
         return super.setAliases(aliases)
     }

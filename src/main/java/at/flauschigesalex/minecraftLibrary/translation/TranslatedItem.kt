@@ -3,12 +3,14 @@
 package at.flauschigesalex.minecraftLibrary.translation
 
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
-import at.flauschigesalex.defaultLibrary.translation.TranslationException
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
+import at.flauschigesalex.minecraftLibrary.bukkit.ui.ColoredBuilder
+import at.flauschigesalex.minecraftLibrary.bukkit.ui.DefaultBuilder
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.ItemBuilder
-import com.destroystokyo.paper.profile.PlayerProfile
+import at.flauschigesalex.minecraftLibrary.bukkit.ui.SkullBuilder
 import org.bukkit.Bukkit
+import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
@@ -29,9 +31,38 @@ fun ItemStack.hasTranslationKey(key: String): Boolean {
     return PersistentData(this.itemMeta, FlauschigeMinecraftLibrary.getLibrary().plugin)["translationKey"]?.equals("${key}.item") ?: false
 }
 
-class TranslatedItem(key: String, material: Material) {
+class TranslatedItem<A: DefaultBuilder<*>> private constructor(key: String, private val builder: A, private val function: (A) -> ItemStack) {
 
     companion object {
+        operator fun invoke(key: String, material: Material) : TranslatedItem<DefaultBuilder<*>> {
+            return TranslatedItem(key, ItemBuilder.invoke(material)) { it.item() }
+        }
+        operator fun invoke(key: String) : TranslatedItem<DefaultBuilder<*>> {
+            return invoke(key, ItemBuilder.defaultMaterial)
+        }
+        
+        fun skull(key: String, player: OfflinePlayer) : TranslatedItem<SkullBuilder> {
+            return TranslatedItem(key, ItemBuilder.skull()) { it.item(player) }
+        }
+        fun skull(key: String, playerName: String) : TranslatedItem<SkullBuilder> {
+            return skull(key, Bukkit.getOfflinePlayer(playerName))
+        }
+        fun skull(key: String, playerUUID: UUID) : TranslatedItem<SkullBuilder> {
+            return skull(key, Bukkit.getOfflinePlayer(playerUUID))
+        }
+        
+        fun colored(key: String, material: Material, color: Color?) : TranslatedItem<ColoredBuilder> {
+            return TranslatedItem(key, ItemBuilder.colored(material)) {
+                if (color != null)
+                    it.setColor(color)
+                
+                it.item()
+            }
+        }
+        fun colored(key: String, material: Material) : TranslatedItem<ColoredBuilder> {
+            return colored(key, material, null)
+        }
+        
         private val buildConsumer = Consumer { parent: TranslatedItemHandler ->
             val locale: TranslatedLocale = TranslatedLocale.of(parent.player)
             val handler = TranslationHandler(locale)
@@ -40,51 +71,43 @@ class TranslatedItem(key: String, material: Material) {
                 parent.translationKey + ".displayLore")
 
             if (locale.contains(displayKeys[0]))
-                parent.builder.setDisplayName(handler.createComponent(displayKeys[0],
+                parent.builder.setName(handler.createComponent(displayKeys[0],
                     TranslationHandler.ModifyComponent.SQUASH, parent.replacements))
 
             if (locale.contains(displayKeys[1]))
-                parent.builder.setDisplayLore(handler.createComponentList(displayKeys[1], parent.replacements))
+                parent.builder.setLore(handler.createComponentList(displayKeys[1], parent.replacements))
 
-            parent.builder.addPersistentData("translationKey", parent.translationKey)
+            parent.builder.persistentData { 
+                it.set("translationKey", parent.translationKey)
+            }
         }
     }
 
     val translationKey: String
-    val material: Material
-
-    constructor(key: String) : this(key, Material.PAPER)
 
     init {
         val translationKey = "${key}.item"
         val response = TranslatedLocale.validateKey(translationKey)
+        assert(response.isValid)
         this.translationKey = response.input
-
-        if (!material.isItem) throw TranslationException("Material $material cannot be displayed in a GUI.")
-        this.material = material
     }
 
-    fun item(player: Player, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {} ): ItemStack {
-        val builder = ItemBuilder(material)
+    fun item(player: Player): ItemStack {
+        return item(player, mapOf()) { }
+    }
+    fun item(player: Player, replacements: Map<String, Any> = mapOf()): ItemStack {
+        return item(player, replacements) { }
+    }
+    fun item(player: Player, consumer: (A) -> Unit = {} ): ItemStack {
+        return item(player, mapOf(), consumer)
+    }
+    fun item(player: Player, replacements: Map<String, Any> = mapOf(), consumer: (A) -> Unit = {} ): ItemStack {
         buildConsumer.andThen { _: TranslatedItemHandler? -> consumer.invoke(builder) }
             .accept(TranslatedItemHandler(builder, player, translationKey, replacements))
-        return builder.item()
+        return function.invoke(builder)
     }
-
-    fun skull(player: Player, uuid: UUID, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {}): ItemStack {
-        return this.skull(player, Bukkit.getOfflinePlayer(uuid), replacements, consumer)
-    }
-    fun skull(player: Player, offlinePlayer: OfflinePlayer, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {}): ItemStack {
-        return this.skull(player, offlinePlayer.playerProfile, replacements, consumer)
-    }
-    fun skull(player: Player, profile: PlayerProfile, replacements: Map<String, Any> = mapOf(), consumer: (ItemBuilder) -> Unit = {}): ItemStack {
-        val builder = ItemBuilder(material)
-        buildConsumer.andThen { _: TranslatedItemHandler? -> consumer.invoke(builder) }
-            .accept(TranslatedItemHandler(builder, player, translationKey, replacements))
-        return builder.skull(profile)
-    }
-
+    
     private data class TranslatedItemHandler(
-        val builder: ItemBuilder, val player: Player, val translationKey: String, val replacements: Map<String, Any>
+        val builder: DefaultBuilder<*>, val player: Player, val translationKey: String, val replacements: Map<String, Any>
     )
 }

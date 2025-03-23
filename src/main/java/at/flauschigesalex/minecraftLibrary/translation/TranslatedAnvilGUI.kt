@@ -3,11 +3,11 @@
 package at.flauschigesalex.minecraftLibrary.translation
 
 import at.flauschigesalex.defaultLibrary.any.InputValidator
-import at.flauschigesalex.defaultLibrary.task.Task
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
 import at.flauschigesalex.minecraftLibrary.bukkit.ui.AnvilGUI
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.AnvilInventory
 import org.bukkit.inventory.view.AnvilView
@@ -29,10 +29,10 @@ abstract class TranslatedAnvilGUI protected constructor(
     }
 
     override fun anvilView(player: Player, view: AnvilView, inventory: AnvilInventory) {
-        Task.createAsyncTask {
+        Bukkit.getScheduler().runTaskAsynchronously(FlauschigeMinecraftLibrary.getLibrary().plugin) { _ ->
             view.title = titleCreator.first.invoke(player, titleCreator.second).toLegacyColored()
             view.repairCost = 0
-        }.execute()
+        }
         view.repairCost = 0
 
         this.preLoad(player, inventory)
@@ -60,7 +60,7 @@ abstract class TranslatedAnvilGUI protected constructor(
 
         this.anvilView(player, view, inventory)
 
-        Task.createAsyncTask {
+        Bukkit.getScheduler().runTaskAsynchronously(FlauschigeMinecraftLibrary.getLibrary().plugin) { _ ->
             try {
                 this.loadGUI(player, inventory, InputValidator(view.renameText ?: "", {
                     this.isValidInput(player, it)
@@ -75,7 +75,7 @@ abstract class TranslatedAnvilGUI protected constructor(
 
                 inventory.firstItem!!.setItemMeta(meta)
             }
-        }.execute()
+        }
 
         this.onOpen(player, inventory)
         if (autoUpdateTickDelay > 0)
