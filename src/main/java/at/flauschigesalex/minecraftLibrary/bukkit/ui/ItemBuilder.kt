@@ -4,7 +4,7 @@ package at.flauschigesalex.minecraftLibrary.bukkit.ui
 
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
-import javassist.expr.NewArray
+import at.flauschigesalex.minecraftLibrary.bukkit.utils.isColorable
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
@@ -20,13 +20,9 @@ import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.inventory.meta.SkullMeta
 import org.jetbrains.annotations.Range
-import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
-
-val Material.isColorable : Boolean
-    get() = this.asItemType()?.typed()?.itemMetaClass?.isAssignableFrom(ColorableArmorMeta::class.java) ?: false
 
 @Suppress("unused")
 abstract class ItemBuilder private constructor() {

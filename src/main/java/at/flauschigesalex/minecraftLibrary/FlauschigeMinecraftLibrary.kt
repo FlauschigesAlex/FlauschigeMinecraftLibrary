@@ -5,7 +5,7 @@ import at.flauschigesalex.defaultLibrary.any.CacheableMojangProfile
 import at.flauschigesalex.defaultLibrary.any.MojangAPI
 import at.flauschigesalex.defaultLibrary.any.MojangProfile
 import at.flauschigesalex.defaultLibrary.any.Reflector
-import at.flauschigesalex.defaultLibrary.supertypes
+import at.flauschigesalex.defaultLibrary.utils.supertypes
 import at.flauschigesalex.minecraftLibrary.bukkit.reflect.BukkitReflect
 import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginCommand
 import at.flauschigesalex.minecraftLibrary.bukkit.reflect.PluginListener
@@ -65,12 +65,14 @@ class FlauschigeMinecraftLibrary private constructor(packageCollection: Collecti
 
         MojangAPI.addNameLookup(MojangAPI.LookupCall.BEFORE) { uuid ->
             Bukkit.getPlayer(uuid)?.run { return@addNameLookup this.let {
-                CacheableMojangProfile(MojangProfile(it.name, it.uniqueId))
+                CacheableMojangProfile(MojangProfile(it.name, it.uniqueId,
+                    it.playerProfile.properties.first { it.name.equals("textures", true) }.value))
             } }
         }
         MojangAPI.addUuidLookup(MojangAPI.LookupCall.BEFORE) { name ->
             Bukkit.getPlayerExact(name)?.run { return@addUuidLookup this.let {
-                CacheableMojangProfile(MojangProfile(it.name, it.uniqueId))
+                CacheableMojangProfile(MojangProfile(it.name, it.uniqueId,
+                    it.playerProfile.properties.first { it.name.equals("textures", true) }.value))
             } }
         }
 
