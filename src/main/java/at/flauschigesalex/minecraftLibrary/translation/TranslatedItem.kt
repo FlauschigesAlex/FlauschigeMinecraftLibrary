@@ -72,10 +72,10 @@ class TranslatedItem<A: DefaultBuilder<*>> private constructor(key: String, priv
 
             if (locale.contains(displayKeys[0]))
                 parent.builder.setName(handler.createComponent(displayKeys[0],
-                    TranslationHandler.ModifyComponent.SQUASH, parent.replacements))
+                    TranslationHandler.ModifyComponent.SQUASH, parent.replacements).value)
 
             if (locale.contains(displayKeys[1]))
-                parent.builder.setLore(handler.createComponentList(displayKeys[1], parent.replacements))
+                parent.builder.setLore(handler.createComponentList(displayKeys[1], parent.replacements).value)
 
             parent.builder.persistentData { 
                 it.set("translationKey", parent.translationKey)
@@ -89,7 +89,7 @@ class TranslatedItem<A: DefaultBuilder<*>> private constructor(key: String, priv
         val translationKey = "${key}.item"
         val response = TranslatedLocale.validateKey(translationKey)
         assert(response.isValid)
-        this.translationKey = response.input
+        this.translationKey = response.value
     }
 
     fun item(player: Player): ItemStack {

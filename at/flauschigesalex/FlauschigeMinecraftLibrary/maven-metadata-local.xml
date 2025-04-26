@@ -3,10 +3,10 @@
   <groupId>at.flauschigesalex</groupId>
   <artifactId>FlauschigeMinecraftLibrary</artifactId>
   <versioning>
-    <release>v1.7.3</release>
+    <release>v1.7.4</release>
     <versions>
-      <version>v1.7.3</version>
+      <version>v1.7.4</version>
     </versions>
-    <lastUpdated>20250411040122</lastUpdated>
+    <lastUpdated>20250426042837</lastUpdated>
   </versioning>
 </metadata>

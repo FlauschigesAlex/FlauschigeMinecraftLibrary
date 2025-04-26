@@ -2,7 +2,7 @@
 
 package at.flauschigesalex.minecraftLibrary.translation
 
-import at.flauschigesalex.defaultLibrary.any.InputValidator
+import at.flauschigesalex.defaultLibrary.any.Validator
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.PersistentData
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Range
 abstract class TranslatedAnvilGUI protected constructor(
     val translationKey: String,
     protected val titleCreator: Pair<(Player, Map<String, Any>) -> String, Map<String, Any>> =
-        Pair({ player, _ -> TranslatedLocale.of(player).find("$translationKey.inventoryName") }, mapOf()),
+        Pair({ player, _ -> TranslatedLocale.of(player).find("$translationKey.inventoryName").value }, mapOf()),
     autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALUE) Int = 0
 ): AnvilGUI(autoUpdateTickDelay) {
 
@@ -62,7 +62,7 @@ abstract class TranslatedAnvilGUI protected constructor(
 
         Bukkit.getScheduler().runTaskAsynchronously(FlauschigeMinecraftLibrary.getLibrary().plugin) { _ ->
             try {
-                this.loadGUI(player, inventory, InputValidator(view.renameText ?: "", {
+                this.loadGUI(player, inventory, Validator(view.renameText ?: "", {
                     this.isValidInput(player, it)
                 }))
             } catch (ignore: IllegalStateException) {
