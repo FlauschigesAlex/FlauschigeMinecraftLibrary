@@ -1,5 +1,6 @@
 package at.flauschigesalex.minecraftLibrary.translation
 
+import at.flauschigesalex.defaultLibrary.any.Validator
 import at.flauschigesalex.defaultLibrary.translation.TranslatedLocale
 import at.flauschigesalex.defaultLibrary.translation.TranslationException
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
@@ -43,27 +44,29 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
         translationKey: String,
         modifyComponent: ModifyComponent = ModifyComponent.default,
         replacements: Map<String, Any> = mapOf()
-    ): Component {
-         return modifyComponent.function.apply(ArrayList(createStringList(translationKey, replacements)))
+    ): Validator<Component> {
+        val validator = createStringList(translationKey, replacements)
+        return Validator(modifyComponent.function.apply(validator.value.toMutableList()), validator.isValid)
     }
 
-    fun createComponentList(translationKey: String, replacements: Map<String, Any> = mapOf()): List<Component> {
-        return createStringList(translationKey, replacements)
-            .map { string: String -> MiniMessage.miniMessage().deserialize(string) }
-            .toList()
+    fun createComponentList(translationKey: String, replacements: Map<String, Any> = mapOf()): Validator<List<Component>> {
+        val validator = createStringList(translationKey, replacements)
+        return Validator(validator.value.map { MiniMessage.miniMessage().deserialize(it) }, validator.isValid)
     }
 
-    private fun createStringList(translationKey: String, replacements: Map<String, Any>): List<String> {
+    private fun createStringList(translationKey: String, replacements: Map<String, Any>): Validator<List<String>> {
         val spacer = "<newLine>"
         val builder = StringBuilder()
 
-        for (string in locale.findList(translationKey, replacements))
+        val validator = locale.findList(translationKey, replacements)
+
+        for (string in validator.value)
             builder.append(spacer).append(string)
 
         var found = builder.toString().replace("<br>", "<newLine>")
         if (found.startsWith(spacer)) found = found.substring(spacer.length)
 
-        return listOf(*found.split(spacer.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+        return Validator(listOf(*found.split(spacer.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()), validator.isValid)
     }
 
     fun sendMessage(translationKey: String) {
@@ -81,12 +84,12 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
         val base = if (displayPrefix) prefix ?: Component.empty() else Component.empty()
 
         Bukkit.getScheduler().runTaskAsynchronously(FlauschigeMinecraftLibrary.getLibrary().plugin) { _ ->
-            sender.sendMessage(base.append(this.createComponent(translationKey, replacements = replacements)))
+            sender.sendMessage(base.append(this.createComponent(translationKey, replacements = replacements).value))
         }
     }
 
-    enum class ModifyComponent(func: Function<ArrayList<String>, Component>) {
-        BREAK(Function { list: ArrayList<String> ->
+    enum class ModifyComponent(func: Function<MutableList<String>, Component>) {
+        BREAK(Function { list ->
             val builder = StringBuilder(list.first())
             list.removeFirst()
 
@@ -95,7 +98,7 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
 
             MiniMessage.miniMessage().deserialize(builder.toString())
         }),
-        SQUASH(Function { list: ArrayList<String> ->
+        SQUASH(Function { list ->
             val builder = StringBuilder(list.first())
             list.removeFirst()
 
@@ -104,10 +107,10 @@ class TranslationHandler private constructor(private val sender: CommandSender?,
 
             MiniMessage.miniMessage().deserialize(builder.toString())
         }),
-        SUPPRESS(Function { strings: ArrayList<String> -> MiniMessage.miniMessage().deserialize(strings.first()) }),
+        SUPPRESS(Function { list -> MiniMessage.miniMessage().deserialize(list.first()) }),
         ;
 
-        val function: Function<ArrayList<String>, Component> = func
+        val function: Function<MutableList<String>, Component> = func
 
         companion object {
             var default = SQUASH

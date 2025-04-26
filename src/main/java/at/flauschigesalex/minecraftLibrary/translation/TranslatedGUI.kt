@@ -25,7 +25,7 @@ abstract class TranslatedGUI protected constructor(
 
     override fun createGUI(player: Player): Inventory {
         return Bukkit.createInventory(player, size, TranslationHandler(player)
-            .createComponent("${translationKey}.inventoryName", replacements = replacements))
+            .createComponent("${translationKey}.inventoryName", replacements = replacements).value)
     }
 
     protected open fun preLoad(player: Player) {}

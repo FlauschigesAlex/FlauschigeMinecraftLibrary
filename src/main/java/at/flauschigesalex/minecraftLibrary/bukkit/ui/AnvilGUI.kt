@@ -3,7 +3,7 @@
 
 package at.flauschigesalex.minecraftLibrary.bukkit.ui
 
-import at.flauschigesalex.defaultLibrary.any.InputValidator
+import at.flauschigesalex.defaultLibrary.any.Validator
 import at.flauschigesalex.minecraftLibrary.FlauschigeMinecraftLibrary
 import at.flauschigesalex.minecraftLibrary.bukkit.Paper
 import at.flauschigesalex.minecraftLibrary.bukkit.Paper.char
@@ -78,7 +78,7 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
         return catchInvalidInput(player, inputString) == null
     }
 
-    open fun onTyping(player: Player, inventory: AnvilInventory, input: InputValidator<String>): ItemStack? {
+    open fun onTyping(player: Player, inventory: AnvilInventory, input: Validator<String>): ItemStack? {
         return null
     }
 
@@ -87,15 +87,15 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
         val anvilView = clickEvent.player.openInventory as AnvilView
         val renameText = anvilView.renameText ?: ""
         
-        val s = CompletableFuture<InputValidator<String>>().completeAsync {
-            InputValidator(renameText, {
+        val s = CompletableFuture<Validator<String>>().completeAsync {
+            Validator(renameText, {
                 this.isValidInput(clickEvent.player, it)
             })
         }
         
         return onClick(clickEvent, s.join())
     }
-    protected open fun onClick(clickEvent: PluginGUIClick, input: InputValidator<String>): Boolean {
+    protected open fun onClick(clickEvent: PluginGUIClick, input: Validator<String>): Boolean {
         clickEvent.cancelEvent()
         return false
     }
@@ -107,11 +107,11 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     final override fun loadGUI(player: Player, inventory: Inventory) {
         val anvilView = player.openInventory as AnvilView
-        this.loadGUI(player, inventory as AnvilInventory, InputValidator(anvilView.renameText ?: "", {
+        this.loadGUI(player, inventory as AnvilInventory, Validator(anvilView.renameText ?: "", {
             this.isValidInput(player, it)
         }))
     }
-    protected open fun loadGUI(player: Player, inventory: AnvilInventory, input: InputValidator<String>) {
+    protected open fun loadGUI(player: Player, inventory: AnvilInventory, input: Validator<String>) {
         inventory.firstItem = defaultInputItem
     }
 
@@ -119,12 +119,12 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
     final override fun loadLiveGUI(player: Player, inventory: Inventory) {
         try {
             val anvilView = player.openInventory as AnvilView
-            this.loadLiveGUI(player, inventory as AnvilInventory, InputValidator(anvilView.renameText ?: "", {
+            this.loadLiveGUI(player, inventory as AnvilInventory, Validator(anvilView.renameText ?: "", {
                 this.isValidInput(player, it)
             }))
         } catch (ignore: Exception) {}
     }
-    protected open fun loadLiveGUI(player: Player, inventory: AnvilInventory, input: InputValidator<String>) {
+    protected open fun loadLiveGUI(player: Player, inventory: AnvilInventory, input: Validator<String>) {
     }
 
     @Deprecated("", level = DeprecationLevel.HIDDEN)
@@ -157,7 +157,7 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
 
         val inventory = view.topInventory
 
-        this.loadGUI(player, inventory, InputValidator(view.renameText ?: "", {
+        this.loadGUI(player, inventory, Validator(view.renameText ?: "", {
             this.isValidInput(player, it)
         }))
         return true
@@ -194,7 +194,7 @@ abstract class AnvilGUI(autoUpdateTickDelay: @Range(from = 1, to = Long.MAX_VALU
             return
 
         this.anvilView(player, view, inventory)
-        this.loadGUI(player, inventory, InputValidator(view.renameText ?: "", {
+        this.loadGUI(player, inventory, Validator(view.renameText ?: "", {
             this.isValidInput(player, it)
         }))
 
@@ -240,7 +240,7 @@ private class AnvilListener private constructor(): PluginListener() {
             if (invalidInput != null)
                 inventory.result = invalidInput
 
-            val result = gui.onTyping(player, inventory, InputValidator(renameText, invalidInput == null))
+            val result = gui.onTyping(player, inventory, Validator(renameText, invalidInput == null))
 
             if (result != null && invalidInput == null)
                 inventory.result = result
