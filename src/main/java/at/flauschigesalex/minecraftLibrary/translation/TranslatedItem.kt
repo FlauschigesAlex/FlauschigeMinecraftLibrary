@@ -65,14 +65,14 @@ class TranslatedItem<A: DefaultBuilder<*>> private constructor(key: String, priv
         
         private val buildConsumer = Consumer { parent: TranslatedItemHandler ->
             val locale: TranslatedLocale = TranslatedLocale.of(parent.player)
-            val handler = TranslationHandler(locale)
+            val handler = TranslatedMessage(locale)
 
             val displayKeys = arrayOf(parent.translationKey + ".displayName",
                 parent.translationKey + ".displayLore")
 
             if (locale.contains(displayKeys[0]))
                 parent.builder.setName(handler.createComponent(displayKeys[0],
-                    TranslationHandler.ModifyComponent.SQUASH, parent.replacements).value)
+                    TranslatedMessage.ModifyComponent.SQUASH, parent.replacements).value)
 
             if (locale.contains(displayKeys[1]))
                 parent.builder.setLore(handler.createComponentList(displayKeys[1], parent.replacements).value)
