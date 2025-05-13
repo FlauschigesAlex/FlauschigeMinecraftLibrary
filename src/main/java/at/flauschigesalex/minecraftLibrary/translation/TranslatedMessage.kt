@@ -17,11 +17,14 @@ fun TranslatedLocale.Companion.of(player: Player): TranslatedLocale {
 }
 
 fun CommandSender.sendTranslated(translationKey: String, replacements: Map<String, Any>) {
-    TranslationHandler(this).sendMessage(translationKey, replacements)
+    TranslatedMessage(this).sendMessage(translationKey, replacements)
 }
 
+@Deprecated("Legacy Name", ReplaceWith("TranslatedMessage", "at.flauschigesalex.minecraftLibrary.translation.TranslatedMessage"))
+typealias TranslationHandler = TranslatedMessage
+
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-class TranslationHandler private constructor(private val sender: CommandSender?, private val locale: TranslatedLocale) {
+class TranslatedMessage private constructor(private val sender: CommandSender?, private val locale: TranslatedLocale) {
 
     companion object {
         var prefix: Component? = null

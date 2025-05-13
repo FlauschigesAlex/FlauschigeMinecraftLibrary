@@ -1,16 +1,15 @@
+@file:Suppress("DEPRECATION")
+
 package at.flauschigesalex.minecraftLibrary.bukkit
 
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.ChatColor
 
-@Suppress("UNCHECKED_CAST", "DEPRECATION")
 object Paper {
 
     fun getNamedTextColorValues(): List<NamedTextColor> {
-        val colorField = NamedTextColor::class.java.getDeclaredField("VALUES")
-        colorField.isAccessible = true
-        return colorField.get(null) as List<NamedTextColor>
+        return NamedTextColor.NAMES.values().toList()
     }
 
     val NamedTextColor.name: String

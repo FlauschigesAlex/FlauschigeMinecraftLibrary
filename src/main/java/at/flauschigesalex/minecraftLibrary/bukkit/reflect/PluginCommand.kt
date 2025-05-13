@@ -7,6 +7,7 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import java.util.*
 
+@Deprecated("Should be replaced with dynamic command registration.", ReplaceWith("CommandBuilder", "at.flauschigesalex.minecraftLibrary.bukkit.command.CommandBuilder"))
 @Suppress("unused", "DEPRECATION", "RedundantModalityModifier")
 abstract class PluginCommand protected constructor(val command: String, description: String, usage: String, aliases: ArrayList<String?>)
     : Command(command, description, usage, aliases), BukkitReflect {
